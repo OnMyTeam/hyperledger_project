@@ -350,9 +350,9 @@ CLI_DELAY=3
 # channel name defaults to "mychannel"
 CHANNEL_NAME="mychannel"
 # chaincode name defaults to "NA"
-CC_NAME="NA"
+CC_NAME="fabcar"
 # chaincode path defaults to "NA"
-CC_SRC_PATH="NA"
+CC_SRC_PATH="../asset-transfer-fabcar/chaincode-go"
 # endorsement policy defaults to "NA". This would allow chaincodes to use the majority default policy.
 CC_END_POLICY="NA"
 # collection configuration defaults to "NA"
@@ -371,7 +371,7 @@ COMPOSE_FILE_COUCH_ORG3=addOrg3/docker/docker-compose-couch-org3.yaml
 COMPOSE_FILE_ORG3=addOrg3/docker/docker-compose-org3.yaml
 #
 # chaincode language defaults to "NA"
-CC_SRC_LANGUAGE="NA"
+CC_SRC_LANGUAGE="go"
 # Chaincode version
 CC_VERSION="1.0"
 # Chaincode definition sequence
@@ -381,7 +381,7 @@ IMAGETAG="latest"
 # default ca image tag
 CA_IMAGETAG="latest"
 # default database
-DATABASE="leveldb"
+DATABASE="couchdb"
 
 # Parse commandline args
 
