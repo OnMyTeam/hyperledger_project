@@ -352,7 +352,7 @@ CHANNEL_NAME="mychannel"
 # chaincode name defaults to "NA"
 CC_NAME="fabcar"
 # chaincode path defaults to "NA"
-CC_SRC_PATH="../asset-transfer-fabcar/chaincode-go"
+CC_SRC_PATH="../asset-transfer-fabcar/chaincode-go/"
 # endorsement policy defaults to "NA". This would allow chaincodes to use the majority default policy.
 CC_END_POLICY="NA"
 # collection configuration defaults to "NA"
