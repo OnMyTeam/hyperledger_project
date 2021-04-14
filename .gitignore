@@ -103,4 +103,4 @@ dist
 # TernJS port file
 .tern-port
 # wallet
-wallet/
+asset-transfer-fabcar/application-javascript-server/wallet/
