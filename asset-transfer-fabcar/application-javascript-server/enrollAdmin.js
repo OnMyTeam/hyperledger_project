@@ -4,7 +4,7 @@
 
 'use strict';
 
-const { Gateway, Wallets } = require('fabric-network');
+const { Gateway, Wallets } = require('./fabric-SDK/fabric-network');
 const FabricCAServices = require('fabric-ca-client');
 const path = require('path');
 const fs = require('fs');
