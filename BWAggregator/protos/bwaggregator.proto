@@ -14,5 +14,5 @@ import "protos/bwtransaction_response.proto";
 
 
 service Endorser {
-    rpc ProcessProposal(SignedProposal) returns (ProposalResponse);
+    rpc ProcessProposal(SignedProposal) returns (BWTransactionResponse);
 }
