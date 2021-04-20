@@ -6,47 +6,24 @@ import (
 	"log"
 	"net"
 
-	"google.golang.org/grpc"
-
-	"hyperledger_project/BWAggregator/data"
-
 	userpb "hyperledger_project/BWAggregator/protos"
+
+	"google.golang.org/grpc"
 )
 
 const portNumber = "9000"
 
-type userServer struct {
-	userpb.UserServer
+type endorserServer struct {
+	userpb.EndorserServer
 }
 
 // GetUser returns user message by user_id
-func (s *userServer) GetUser(ctx context.Context, req *userpb.GetUserRequest) (*userpb.GetUserResponse, error) {
-	fmt.Println(req)
-	userID := req.UserId
+func (s *endorserServer) ProcessProposal(ctx context.Context, req *userpb.SignedProposal) (*userpb.BWTransactionResponse, error) {
 
-	var userMessage *userpb.UserMessage
-	for _, u := range data.UserData {
-		if u.UserId != userID {
-			continue
-		}
-		userMessage = u
-		break
-	}
-
-	return &userpb.GetUserResponse{
-		UserMessage: userMessage,
-	}, nil
-}
-
-// ListUsers returns all user messages
-func (s *userServer) ListUsers(ctx context.Context, req *userpb.ListUsersRequest) (*userpb.ListUsersResponse, error) {
-	userMessages := make([]*userpb.UserMessage, len(data.UserData))
-	for i, u := range data.UserData {
-		userMessages[i] = u
-	}
-
-	return &userpb.ListUsersResponse{
-		UserMessages: userMessages,
+	userID := req.ProposalBytes
+	fmt.Println(userID)
+	return &userpb.BWTransactionResponse{
+		Response: 2,
 	}, nil
 }
 
@@ -57,7 +34,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	userpb.RegisterUserServer(grpcServer, &userServer{})
+	userpb.RegisterEndorserServer(grpcServer, &endorserServer{})
 
 	log.Printf("start gRPC server on !!%s port", portNumber)
 	if err := grpcServer.Serve(lis); err != nil {
