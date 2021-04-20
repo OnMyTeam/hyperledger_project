@@ -1,0 +1,18 @@
+// Copyright the Hyperledger Fabric contributors. All rights reserved.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+
+option go_package = "hyperledger_project/BWAggregator/protos";
+
+package protos;
+
+import "protos/bwtransaction.proto";
+import "protos/bwtransaction_response.proto";
+
+
+service Endorser {
+    rpc ProcessProposal(SignedProposal) returns (ProposalResponse);
+}
