@@ -35,16 +35,19 @@ ___
 ## 개선방안
 
 ### 1. Blind Write 트랜잭션 전송을 위한 fabric-sdk내 submitBWTransaction 함수 추가
-* submitBWTransaction함수 실행시, Chaincode function name, Key, Parameter, Operator, Operand, Precondition, Postcondition에 대한 정보를 인자값으로 넘김
+
+
+* submitBWTransaction함수 실행시, Chaincode function name, Key, fieldname, Operator, Operand, Precondition, Postcondition에 대한 정보를 인자값으로 넘김
 * 넘긴 인자값들을 활용하여 BWAggregator를 통해 Write할 값을 생성하여 TxProposal을 각 Peer(Endorser)에게 전송함
 * 아래는 현재 fabric-sdk-node에서 트랜잭션을 전송할 수 있는 함수 및 신규 추가 함수(submitBWTransaction)를 의미함
-<br>
 ```
 submitTransaction: Send transaction for read-write(ex submitTransaction('BuyTicket', 'TICKET0'))
 evaluateTransaction: Send read only transaction(ex evaluateTransaction('QueryAllTickets'))
 submitBWTransaction: Send blind write transaction(ex submitBWTransaction('BuyTicket', 'Ticket0', 'Amount', operatorEnum.ADD, 1, 0, 1000))
 ```
+
 <img src="images/image4.jpg" alt="drawing" width="1000"/><br>
+<br>
 
 ### 2. Blind Write 트랜잭션 수집 및 처리를 위한 BWAggregator 설치
 <br>
