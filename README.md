@@ -28,7 +28,7 @@ ___
 
 ## System Architecture
 <br>
-<img src="images/image3.png" alt="drawing" width="700"/><br>
+<img src="images/image3.png" alt="drawing" width="1000"/><br>
 
 <br>
 
@@ -44,7 +44,8 @@ submitTransaction: Send transaction for read-write(ex submitTransaction('BuyTick
 evaluateTransaction: Send read only transaction(ex evaluateTransaction('QueryAllTickets'))
 submitBWTransaction: Send blind write transaction(ex submitBWTransaction('BuyTicket', 'Ticket0', 'Amount', operatorEnum.ADD, 1, 0, 1000))
 ```
-<img src="images/image4.jpg" alt="drawing" width="700"/><br>
+<img src="images/image4.jpg" alt="drawing" width="1000"/><br>
 
 ### 2. Blind Write 트랜잭션 수집 및 처리를 위한 BWAggregator 설치
-<img src="images/image4.jpg" alt="drawing" width="700"/><br>
+<br>
+<img src="images/image5.png" alt="drawing" width="1000"/><br>
