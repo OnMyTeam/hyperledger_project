@@ -19,16 +19,17 @@ type Car struct {
 	Model  string `json:"model"`
 	Colour string `json:"colour"`
 	Owner  string `json:"owner"`
+	Amount int    `json:"amount"`
 }
 
 // InitLedger adds a base set of cars to the ledger
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	cars := []Car{
-		Car{ID: "CAR0", Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko"},
-		Car{ID: "CAR1", Make: "Ford", Model: "Mustang", Colour: "red", Owner: "Brad"},
-		Car{ID: "CAR2", Make: "Hyundai", Model: "Tucson", Colour: "green", Owner: "Jin Soo"},
-		Car{ID: "CAR3", Make: "Volkswagen", Model: "Passat", Colour: "yellow", Owner: "Max"},
-		Car{ID: "CAR4", Make: "Tesla", Model: "S", Colour: "black", Owner: "Adriana"},
+		Car{ID: "CAR0", Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko", Amount: 1000},
+		Car{ID: "CAR1", Make: "Ford", Model: "Mustang", Colour: "red", Owner: "Brad", Amount: 1000},
+		Car{ID: "CAR2", Make: "Hyundai", Model: "Tucson", Colour: "green", Owner: "Jin Soo", Amount: 1000},
+		Car{ID: "CAR3", Make: "Volkswagen", Model: "Passat", Colour: "yellow", Owner: "Max", Amount: 1000},
+		Car{ID: "CAR4", Make: "Tesla", Model: "S", Colour: "black", Owner: "Adriana", Amount: 1000},
 	}
 
 	for _, car := range cars {
@@ -217,4 +218,18 @@ func (s *SmartContract) DeleteCar(ctx contractapi.TransactionContextInterface, i
 	}
 
 	return ctx.GetStub().DelState(id)
+}
+
+// BuyCar decrease amount
+func (s *SmartContract) BuyCar(ctx contractapi.TransactionContextInterface, id string, amount int) error {
+	car := Car{
+		ID:     id,
+		Amount: amount,
+	}
+	carJSON, err := json.Marshal(car)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState(id, carJSON)
 }
