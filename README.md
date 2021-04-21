@@ -1,6 +1,6 @@
 # hyperledger_project
 하이퍼레저 패브릭 MVCC문제 해결방안에 대한 학위논문 및 구현<br>
-주제: Blind Write 트랜잭션을 활용한 하이퍼레저 패브릭 MVCC 충돌 회피 방법<br>
+주제: Blind Write 트랜잭션을 활용한 하이퍼레저 패브릭 MVCC 충돌 회피 방법  
 (Hyperledger Fabric MVCC Collision Avoidance Method Using Blind Write Transactions)
 ___
 ## 문제
@@ -32,7 +32,7 @@ ___
 
 <br>
 
-## 개선방안
+## 개선방안(상세)
 
 ### 1. Blind Write 트랜잭션 전송을 위한 fabric-sdk내 submitBWTransaction 함수 추가
 
@@ -50,5 +50,9 @@ submitBWTransaction: Send blind write transaction(ex submitBWTransaction('BuyTic
 <br>
 
 ### 2. Blind Write 트랜잭션 수집 및 처리를 위한 BWAggregator 설치
-<br>
+
+* Client가 전송한 BWTx를 BWAggregator에서 일정시간 동안 수집
+* BlindWriteTransaction내의 operator, operand를 활용하여 각 키 별로 연산 후, 최종 write value를 생성하여 TxProposals를 각 Peer에게 전송함
+* 이후 TxProposal 처리 방식은 기존 패브릭에서의 처리방식과 동일함
 <img src="images/image5.png" alt="drawing" width="1000"/><br>
+
