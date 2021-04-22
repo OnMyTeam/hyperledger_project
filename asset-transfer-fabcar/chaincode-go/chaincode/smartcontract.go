@@ -3,6 +3,7 @@ package chaincode
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -51,6 +52,8 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 // QueryCar returns the car stored in the world state with given id.
 func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, id string) (*Car, error) {
 	carJSON, err := ctx.GetStub().GetState(id)
+	fmt.Println("carJSON => ", carJSON)
+	fmt.Println("Type => ", reflect.TypeOf(carJSON))
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state: %v", err)
 	}
@@ -63,7 +66,7 @@ func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, id
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("car => ", car)
 	return &car, nil
 }
 
@@ -221,15 +224,20 @@ func (s *SmartContract) DeleteCar(ctx contractapi.TransactionContextInterface, i
 }
 
 // BuyCar decrease amount
-func (s *SmartContract) BuyCar(ctx contractapi.TransactionContextInterface, id string, amount int) error {
-	car := Car{
-		ID:     id,
-		Amount: amount,
+func (s *SmartContract) BuyCar(ctx contractapi.TransactionContextInterface, id string, value string) error {
+	var bytes []byte
+	bytes = []byte(value)
+	var car Car
+	err := json.Unmarshal(bytes, &car)
+	if err != nil {
+		return err
 	}
+	fmt.Println("car =>", car)
+	car.Amount = 500
 	carJSON, err := json.Marshal(car)
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("carJSON =>", carJSON)
 	return ctx.GetStub().PutState(id, carJSON)
 }
