@@ -30,6 +30,10 @@ elif [ $type == "QueryHistoryCar" ];
 then
 
     peer chaincode query -C mychannel -n fabcar -c '{"function":"QueryHistoryCars","Args":["CAR0"]}'
+elif [ $type == "QueryCar" ];
+then
+
+    peer chaincode query -C mychannel -n fabcar -c '{"function":"QueryCar","Args":["CAR0"]}'    
 elif [ $type == "GetBlock" ];
 then
 
