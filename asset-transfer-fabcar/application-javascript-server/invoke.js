@@ -84,7 +84,7 @@ async function main() {
 		// This will be sent to both peers and if both peers endorse the transaction, the endorsed proposal will be sent
 		// to the orderer to be committed by each of the peer's to the channel ledger.
 		console.log('=> Submit Transaction: AddCar, adds new car with id, make, model, colour, and owner arguments');
-		await contract.submitBWTransaction('BuyCar', 'CAR1', 999);   
+		await contract.submitBWTransaction('AAAA', 'BBBB', "CCCC", 11, 22, 333, 444);   
         
         console.log('=> Transaction has been submitted');
         await gateway.disconnect();

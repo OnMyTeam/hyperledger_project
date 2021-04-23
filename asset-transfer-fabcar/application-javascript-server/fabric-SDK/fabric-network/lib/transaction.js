@@ -259,8 +259,38 @@ class Transaction {
     }
 
     async submitAggregator(...args) {
-        const PROTO_PATH = path.resolve(__dirname , '../../../../../BWAggregator/protos/bwaggregator.proto');
+        // const PROTO_PATH = path.resolve(__dirname , '../../../../../BWAggregator/protos/bwaggregator.proto');
 
+        // const packageDefinition = protoLoader.loadSync(
+        //     PROTO_PATH,
+        //     {keepCase: true,
+        //     longs: String,
+        //     enums: String,
+        //     defaults: true,
+        //     oneofs: true
+        //     });
+        // const helloProto = grpc.loadPackageDefinition(packageDefinition).user;
+        // var client = new helloProto.User('localhost:9000',
+        //                                     grpc.credentials.createInsecure());
+        // var user;
+        // if (process.argv.length >= 3) {
+        //     user = process.argv[2];
+        // } else {
+        //     user = 'world';
+        // }
+        // client.processProposal({user_id: "1", name: "sanggi", phone_number:"010", age:11}, function(err, response) {
+        //     console.log('Greeting:', response);
+        // });
+        console.log("contract : ",this.name);
+        console.log("args : ",args);
+        const key = args[0];
+        const fieldname = args[1];
+        const operator = args[2];
+        const operand = args[3];
+        const precondition = args[4];
+        const postcondition = args[5];
+        const PROTO_PATH = path.resolve(__dirname , '../../../../../BWAggregator/protos/bwaggregator.proto');
+        
         const packageDefinition = protoLoader.loadSync(
             PROTO_PATH,
             {keepCase: true,
@@ -269,18 +299,25 @@ class Transaction {
             defaults: true,
             oneofs: true
             });
-        const helloProto = grpc.loadPackageDefinition(packageDefinition).user;
-        var client = new helloProto.User('localhost:9000',
+
+        const BWAggregatorProto = grpc.loadPackageDefinition(packageDefinition).protos;
+
+        var client = new BWAggregatorProto.Endorser('localhost:9000',
                                             grpc.credentials.createInsecure());
-        var user;
-        if (process.argv.length >= 3) {
-            user = process.argv[2];
-        } else {
-            user = 'world';
+
+        var data = {
+            functionname: this.name,
+            key: key,
+            fieldname: fieldname,
+            operator: operator,
+            operand: operand,
+            precondition: precondition,
+            postcondition: postcondition
         }
-        client.processProposal({user_id: "1", name: "sanggi", phone_number:"010", age:11}, function(err, response) {
-            console.log('Greeting:', response);
-        });        
+        client.processProposal(data, function(err, response) {
+            console.log('Greeting:', response.response);
+            
+        });
 
     }    
     /**

@@ -2,8 +2,8 @@ const path = require('path');
 const grpc = require('grpc');
 protoLoader = require('@grpc/proto-loader');
 
-const PROTO_PATH = path.resolve(__dirname , '../../BWAggregator/protos/user.proto');
-
+const PROTO_PATH = path.resolve(__dirname , '../../BWAggregator/protos/bwaggregator.proto');
+   
 const packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
     {keepCase: true,
@@ -12,20 +12,26 @@ const packageDefinition = protoLoader.loadSync(
      defaults: true,
      oneofs: true
     });
-const helloProto = grpc.loadPackageDefinition(packageDefinition).user;
 
-function main() {
-  var client = new helloProto.User('localhost:9000',
+const BWAggregatorProto = grpc.loadPackageDefinition(packageDefinition).protos;
+
+function main(amount) {
+  var client = new BWAggregatorProto.Endorser('localhost:9000',
                                        grpc.credentials.createInsecure());
-  var user;
-  if (process.argv.length >= 3) {
-    user = process.argv[2];
-  } else {
-    user = 'world';
+
+  var data = {
+    functionname: "BuyCar",
+    key: "CAR0",
+    fieldname: "Amount",
+    operator: 1,
+    operand: 1,
+    precondition: 0,
+    postcondition: amount
   }
-  client.getUser({user_id: "1", name: "sanggi", phone_number:"010", age:11}, function(err, response) {
-    console.log('Greeting:', response);
+  client.processProposal(data, function(err, response) {
+    console.log('Greeting:', response.response);
   });
 }
-
-main();
+for(var i=999; i >=0 ; i--){
+  main(i);
+}
