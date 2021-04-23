@@ -18,7 +18,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
 
-func main() {
+func main1() {
 	log.Println("============ application-golang starts ============")
 
 	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
