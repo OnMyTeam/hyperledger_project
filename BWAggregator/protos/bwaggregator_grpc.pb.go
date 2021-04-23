@@ -4,7 +4,6 @@ package protos
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -19,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EndorserClient interface {
-	ProcessProposal(ctx context.Context, in *SignedProposal, opts ...grpc.CallOption) (*BWTransactionResponse, error)
+	ProcessProposal(ctx context.Context, in *BWTransaction, opts ...grpc.CallOption) (*BWTransactionResponse, error)
 }
 
 type endorserClient struct {
@@ -30,7 +29,7 @@ func NewEndorserClient(cc grpc.ClientConnInterface) EndorserClient {
 	return &endorserClient{cc}
 }
 
-func (c *endorserClient) ProcessProposal(ctx context.Context, in *SignedProposal, opts ...grpc.CallOption) (*BWTransactionResponse, error) {
+func (c *endorserClient) ProcessProposal(ctx context.Context, in *BWTransaction, opts ...grpc.CallOption) (*BWTransactionResponse, error) {
 	out := new(BWTransactionResponse)
 	err := c.cc.Invoke(ctx, "/protos.Endorser/ProcessProposal", in, out, opts...)
 	if err != nil {
@@ -43,7 +42,7 @@ func (c *endorserClient) ProcessProposal(ctx context.Context, in *SignedProposal
 // All implementations must embed UnimplementedEndorserServer
 // for forward compatibility
 type EndorserServer interface {
-	ProcessProposal(context.Context, *SignedProposal) (*BWTransactionResponse, error)
+	ProcessProposal(context.Context, *BWTransaction) (*BWTransactionResponse, error)
 	mustEmbedUnimplementedEndorserServer()
 }
 
@@ -51,7 +50,7 @@ type EndorserServer interface {
 type UnimplementedEndorserServer struct {
 }
 
-func (UnimplementedEndorserServer) ProcessProposal(context.Context, *SignedProposal) (*BWTransactionResponse, error) {
+func (UnimplementedEndorserServer) ProcessProposal(context.Context, *BWTransaction) (*BWTransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProcessProposal not implemented")
 }
 func (UnimplementedEndorserServer) mustEmbedUnimplementedEndorserServer() {}
@@ -68,7 +67,7 @@ func RegisterEndorserServer(s grpc.ServiceRegistrar, srv EndorserServer) {
 }
 
 func _Endorser_ProcessProposal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SignedProposal)
+	in := new(BWTransaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -80,7 +79,7 @@ func _Endorser_ProcessProposal_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/protos.Endorser/ProcessProposal",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EndorserServer).ProcessProposal(ctx, req.(*SignedProposal))
+		return srv.(EndorserServer).ProcessProposal(ctx, req.(*BWTransaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }

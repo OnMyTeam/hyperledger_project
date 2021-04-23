@@ -9,30 +9,17 @@ option go_package = "hyperledger_project/BWAggregator/protos";
 
 package protos;
 
-import "google/protobuf/timestamp.proto";
 
-// A ProposalResponse is returned from an endorser to the proposal submitter.
-// The idea is that this message contains the endorser's response to the
-// request of a client to perform an action over a chaincode (or more
-// generically on the ledger); the response might be success/error (conveyed in
-// the Response field) together with a description of the action and a
-// signature over it by that endorser.  If a sufficient number of distinct
-// endorsers agree on the same action and produce signature to that effect, a
-// transaction can be generated and sent for ordering.
+
+
 message BWTransactionResponse {
-    // Version indicates message protocol version
-    int32 version = 1;
-
-    // Timestamp is the time that the message
-    // was created as  defined by the sender
-    google.protobuf.Timestamp timestamp = 2;
 
     // A response message indicating whether the
     // endorsement of the action was successful
-    int32 response = 4;
+    int32 response = 1;
 
     // The payload of response. It is the bytes of ProposalResponsePayload
-    bytes payload = 5;
+    bytes payload = 2;
 
 }
 

@@ -9,10 +9,41 @@ option go_package = "hyperledger_project/BWAggregator/protos";
 
 package protos;
 
-import "protos/bwtransaction.proto";
-import "protos/bwtransaction_response.proto";
+
 
 
 service Endorser {
-    rpc ProcessProposal(SignedProposal) returns (BWTransactionResponse);
+    rpc ProcessProposal(BWTransaction) returns (BWTransactionResponse);
 }
+
+message BWTransaction {
+
+    // chaincode function name
+    string functionname = 1;
+
+    // chaincode key
+    string key = 2;
+
+    // chaincode fieldname for aggregate
+    string fieldname = 3;
+    // operator
+    int32 operator = 4;
+    // operand only numeric
+    int32 operand = 5;
+    // precondition
+    int32 precondition = 6;
+    // postcondition
+    int32 postcondition = 7;        
+}
+
+message BWTransactionResponse {
+
+    // A response message indicating whether the
+    // endorsement of the action was successful
+    int32 response = 1;
+
+    // The payload of response. It is the bytes of ProposalResponsePayload
+    bytes payload = 2;
+
+}
+
