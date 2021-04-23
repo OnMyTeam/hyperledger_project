@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
@@ -68,9 +69,17 @@ func main() {
 	}
 	log.Println(string(result))
 
-	result, err = contract.EvaluateTransaction("QueryAllCars")
+	result, err = contract.EvaluateTransaction("QueryCar", "CAR0")
 	if err != nil {
 		log.Fatalf("Failed to evaluate transaction: %v", err)
+	}
+	log.Println("init ->", result)
+	log.Println("Type ->", reflect.TypeOf(result))
+	log.Println("string ->", string(result))
+
+	result, err = contract.SubmitTransaction("BuyCar", "CAR0", string(result))
+	if err != nil {
+		log.Fatalf("failed to evaluate transaction: %v", err)
 	}
 	log.Println(string(result))
 

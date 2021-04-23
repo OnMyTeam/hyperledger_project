@@ -11,6 +11,9 @@ const EventHandlers = require("./impl/event/defaulteventhandlerstrategies");
 const Logger = require("./logger");
 const util = require("util");
 const logger = Logger.getLogger('Transaction');
+const path = require('path');
+const grpc = require('grpc');
+const protoLoader = require('@grpc/proto-loader');
 function getResponsePayload(proposalResponse) {
     const validEndorsementResponse = getValidEndorsementResponse(proposalResponse.responses);
     if (!validEndorsementResponse) {
@@ -207,6 +210,7 @@ class Transaction {
         }
         // by now we should have targets or a discovery handler to be used
         // by the send() of the proposal instance
+        
         const proposalResponse = await endorsement.send(proposalSendRequest);
         try {
             const result = getResponsePayload(proposalResponse);
@@ -253,6 +257,32 @@ class Transaction {
             throw err;
         }
     }
+
+    async submitAggregator(...args) {
+        const PROTO_PATH = path.resolve(__dirname , '../../../../../BWAggregator/protos/bwaggregator.proto');
+
+        const packageDefinition = protoLoader.loadSync(
+            PROTO_PATH,
+            {keepCase: true,
+            longs: String,
+            enums: String,
+            defaults: true,
+            oneofs: true
+            });
+        const helloProto = grpc.loadPackageDefinition(packageDefinition).user;
+        var client = new helloProto.User('localhost:9000',
+                                            grpc.credentials.createInsecure());
+        var user;
+        if (process.argv.length >= 3) {
+            user = process.argv[2];
+        } else {
+            user = 'world';
+        }
+        client.processProposal({user_id: "1", name: "sanggi", phone_number:"010", age:11}, function(err, response) {
+            console.log('Greeting:', response);
+        });        
+
+    }    
     /**
      * Evaluate a transaction function and return its results.
      * The transaction function will be evaluated on the endorsing peers but

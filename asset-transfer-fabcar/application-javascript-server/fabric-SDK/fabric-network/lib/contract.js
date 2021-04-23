@@ -170,11 +170,15 @@ class ContractImpl {
         verifyTransactionName(name);
         const qualifiedName = this._getQualifiedName(name);
         const transaction = new transaction_1.Transaction(this, qualifiedName);
+        console.log("Instance Transaction!!!!",qualifiedName);
         return transaction;
     }
     async submitTransaction(name, ...args) {
         return this.createTransaction(name).submit(...args);
     }
+    async submitBWTransaction(name, ...args) {
+        return this.createTransaction(name).submitAggregator(...args);
+    }    
     async evaluateTransaction(name, ...args) {
         return this.createTransaction(name).evaluate(...args);
     }
