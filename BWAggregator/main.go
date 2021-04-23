@@ -18,12 +18,28 @@ type endorserServer struct {
 }
 
 // GetUser returns user message by user_id
-func (s *endorserServer) ProcessProposal(ctx context.Context, req *userpb.SignedProposal) (*userpb.BWTransactionResponse, error) {
+func (s *endorserServer) ProcessProposal(ctx context.Context, req *userpb.BWTransaction) (*userpb.BWTransactionResponse, error) {
 
-	userID := req.ProposalBytes
-	fmt.Println(userID)
+	functionName := req.Functionname
+	Key := req.Key
+	Fieldname := req.Fieldname
+	Operator := req.Operator
+	Operand := req.Operand
+	Precondition := req.Precondition
+	Postcondition := req.Postcondition
+	fmt.Println(functionName)
+	fmt.Println(Key)
+	fmt.Println(Fieldname)
+	fmt.Println(Operator)
+	fmt.Println(Operand)
+	fmt.Println(Precondition)
+	fmt.Println(Postcondition)
+	var message string
+	message = "success"
+	b := []byte(message)
 	return &userpb.BWTransactionResponse{
 		Response: 2,
+		Payload:  b,
 	}, nil
 }
 
