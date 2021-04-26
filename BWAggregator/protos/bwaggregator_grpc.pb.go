@@ -14,86 +14,86 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// EndorserClient is the client API for Endorser service.
+// AggregatorClient is the client API for Aggregator service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type EndorserClient interface {
-	ProcessProposal(ctx context.Context, in *BWTransaction, opts ...grpc.CallOption) (*BWTransactionResponse, error)
+type AggregatorClient interface {
+	ReceiveBWTransaction(ctx context.Context, in *BWTransaction, opts ...grpc.CallOption) (*BWTransactionResponse, error)
 }
 
-type endorserClient struct {
+type aggregatorClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewEndorserClient(cc grpc.ClientConnInterface) EndorserClient {
-	return &endorserClient{cc}
+func NewAggregatorClient(cc grpc.ClientConnInterface) AggregatorClient {
+	return &aggregatorClient{cc}
 }
 
-func (c *endorserClient) ProcessProposal(ctx context.Context, in *BWTransaction, opts ...grpc.CallOption) (*BWTransactionResponse, error) {
+func (c *aggregatorClient) ReceiveBWTransaction(ctx context.Context, in *BWTransaction, opts ...grpc.CallOption) (*BWTransactionResponse, error) {
 	out := new(BWTransactionResponse)
-	err := c.cc.Invoke(ctx, "/protos.Endorser/ProcessProposal", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/protos.Aggregator/ReceiveBWTransaction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// EndorserServer is the server API for Endorser service.
-// All implementations must embed UnimplementedEndorserServer
+// AggregatorServer is the server API for Aggregator service.
+// All implementations must embed UnimplementedAggregatorServer
 // for forward compatibility
-type EndorserServer interface {
-	ProcessProposal(context.Context, *BWTransaction) (*BWTransactionResponse, error)
-	mustEmbedUnimplementedEndorserServer()
+type AggregatorServer interface {
+	ReceiveBWTransaction(context.Context, *BWTransaction) (*BWTransactionResponse, error)
+	mustEmbedUnimplementedAggregatorServer()
 }
 
-// UnimplementedEndorserServer must be embedded to have forward compatible implementations.
-type UnimplementedEndorserServer struct {
+// UnimplementedAggregatorServer must be embedded to have forward compatible implementations.
+type UnimplementedAggregatorServer struct {
 }
 
-func (UnimplementedEndorserServer) ProcessProposal(context.Context, *BWTransaction) (*BWTransactionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ProcessProposal not implemented")
+func (UnimplementedAggregatorServer) ReceiveBWTransaction(context.Context, *BWTransaction) (*BWTransactionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReceiveBWTransaction not implemented")
 }
-func (UnimplementedEndorserServer) mustEmbedUnimplementedEndorserServer() {}
+func (UnimplementedAggregatorServer) mustEmbedUnimplementedAggregatorServer() {}
 
-// UnsafeEndorserServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to EndorserServer will
+// UnsafeAggregatorServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AggregatorServer will
 // result in compilation errors.
-type UnsafeEndorserServer interface {
-	mustEmbedUnimplementedEndorserServer()
+type UnsafeAggregatorServer interface {
+	mustEmbedUnimplementedAggregatorServer()
 }
 
-func RegisterEndorserServer(s grpc.ServiceRegistrar, srv EndorserServer) {
-	s.RegisterService(&Endorser_ServiceDesc, srv)
+func RegisterAggregatorServer(s grpc.ServiceRegistrar, srv AggregatorServer) {
+	s.RegisterService(&Aggregator_ServiceDesc, srv)
 }
 
-func _Endorser_ProcessProposal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Aggregator_ReceiveBWTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BWTransaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EndorserServer).ProcessProposal(ctx, in)
+		return srv.(AggregatorServer).ReceiveBWTransaction(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.Endorser/ProcessProposal",
+		FullMethod: "/protos.Aggregator/ReceiveBWTransaction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EndorserServer).ProcessProposal(ctx, req.(*BWTransaction))
+		return srv.(AggregatorServer).ReceiveBWTransaction(ctx, req.(*BWTransaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Endorser_ServiceDesc is the grpc.ServiceDesc for Endorser service.
+// Aggregator_ServiceDesc is the grpc.ServiceDesc for Aggregator service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Endorser_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "protos.Endorser",
-	HandlerType: (*EndorserServer)(nil),
+var Aggregator_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "protos.Aggregator",
+	HandlerType: (*AggregatorServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ProcessProposal",
-			Handler:    _Endorser_ProcessProposal_Handler,
+			MethodName: "ReceiveBWTransaction",
+			Handler:    _Aggregator_ReceiveBWTransaction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

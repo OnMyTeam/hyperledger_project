@@ -12,8 +12,8 @@ package protos;
 
 
 
-service Endorser {
-    rpc ProcessProposal(BWTransaction) returns (BWTransactionResponse);
+service Aggregator {
+    rpc ReceiveBWTransaction(BWTransaction) returns (BWTransactionResponse);
 }
 
 message BWTransaction {
