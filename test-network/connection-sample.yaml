@@ -31,12 +31,11 @@ orderers:
       O/xl7L/FMzY4s4zteOfaCxjYprKK0U4qvAIgSKYb2Gw8+opXQV0f7adR5t3huaYP
       546HMBbXD5Aav9w=
       -----END CERTIFICATE-----
-
-
-
     grpcOptions:
       ssl-target-name-override: orderer.example.com
       hostnameOverride: orderer.example.com            
+
+
 client:
   organization: Org1
   connection:
