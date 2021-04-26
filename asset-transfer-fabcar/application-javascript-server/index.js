@@ -16,7 +16,7 @@ const packageDefinition = protoLoader.loadSync(
 const BWAggregatorProto = grpc.loadPackageDefinition(packageDefinition).protos;
 
 function main(amount) {
-  var client = new BWAggregatorProto.Endorser('localhost:9000',
+  var client = new BWAggregatorProto.Aggregator('localhost:9000',
                                        grpc.credentials.createInsecure());
 
   var data = {
@@ -28,10 +28,9 @@ function main(amount) {
     precondition: 0,
     postcondition: amount
   }
-  client.processProposal(data, function(err, response) {
-    console.log('Greeting:', response.response);
+  client.ReceiveBWTransaction(data, function(err, response) {
+  
+    console.log('return:', response.response);
   });
 }
-for(var i=999; i >=0 ; i--){
-  main(i);
-}
+main(999);
