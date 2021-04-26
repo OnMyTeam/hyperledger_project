@@ -6,20 +6,22 @@ import (
 	"log"
 	"net"
 
-	userpb "hyperledger_project/BWAggregator/protos"
+	aggregator "hyperledger_project/BWAggregator/aggregator"
+	protos "hyperledger_project/BWAggregator/protos"
 
 	"google.golang.org/grpc"
 )
 
 const portNumber = "9000"
 
-type endorserServer struct {
-	userpb.EndorserServer
+type BWAggregatorServer struct {
+	protos.AggregatorServer
+	aggregator.Aggregator
 }
 
-// GetUser returns user message by user_id
-func (s *endorserServer) ProcessProposal(ctx context.Context, req *userpb.BWTransaction) (*userpb.BWTransactionResponse, error) {
-
+// ProcessProposal returns BWTransactionResponse
+func (aggregator *BWAggregatorServer) ReceiveBWTransaction(ctx context.Context, req *protos.BWTransaction) (*protos.BWTransactionResponse, error) {
+	aggregator.GetBWTxSendChannel() <- req
 	functionName := req.Functionname
 	Key := req.Key
 	Fieldname := req.Fieldname
@@ -34,10 +36,12 @@ func (s *endorserServer) ProcessProposal(ctx context.Context, req *userpb.BWTran
 	fmt.Println(Operand)
 	fmt.Println(Precondition)
 	fmt.Println(Postcondition)
+	msg := <-aggregator.GetBWTxReceiveChannel()
+	fmt.Println("msg =>", msg)
 	var message string
 	message = "success"
 	b := []byte(message)
-	return &userpb.BWTransactionResponse{
+	return &protos.BWTransactionResponse{
 		Response: 2,
 		Payload:  b,
 	}, nil
@@ -50,7 +54,9 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	userpb.RegisterEndorserServer(grpcServer, &endorserServer{})
+	var bWAggregatorServer BWAggregatorServer
+	bWAggregatorServer.Aggregator = *aggregator.Init()
+	protos.RegisterAggregatorServer(grpcServer, &bWAggregatorServer)
 
 	log.Printf("start gRPC server on !!%s port", portNumber)
 	if err := grpcServer.Serve(lis); err != nil {
