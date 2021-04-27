@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 
@@ -21,23 +20,9 @@ type BWAggregatorServer struct {
 
 // ProcessProposal returns BWTransactionResponse
 func (aggregator *BWAggregatorServer) ReceiveBWTransaction(ctx context.Context, req *protos.BWTransaction) (*protos.BWTransactionResponse, error) {
+	// BWTxset생성을 위한 메세지 전달
 	aggregator.GetBWTxSendChannel() <- req
-	functionName := req.Functionname
-	Key := req.Key
-	Fieldname := req.Fieldname
-	Operator := req.Operator
-	Operand := req.Operand
-	Precondition := req.Precondition
-	Postcondition := req.Postcondition
-	fmt.Println(functionName)
-	fmt.Println(Key)
-	fmt.Println(Fieldname)
-	fmt.Println(Operator)
-	fmt.Println(Operand)
-	fmt.Println(Precondition)
-	fmt.Println(Postcondition)
-	msg := <-aggregator.GetBWTxReceiveChannel()
-	fmt.Println("msg =>", msg)
+
 	var message string
 	message = "success"
 	b := []byte(message)
