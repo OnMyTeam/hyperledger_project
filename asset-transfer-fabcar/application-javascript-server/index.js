@@ -15,7 +15,7 @@ const packageDefinition = protoLoader.loadSync(
 
 const BWAggregatorProto = grpc.loadPackageDefinition(packageDefinition).protos;
 
-function main(amount) {
+async function main(amount) {
   var client = new BWAggregatorProto.Aggregator('localhost:9000',
                                        grpc.credentials.createInsecure());
 
@@ -34,3 +34,8 @@ function main(amount) {
   });
 }
 main(999);
+main(998);
+main(997);
+main(996);
+main(996);
+
