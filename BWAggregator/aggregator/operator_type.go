@@ -1,3 +1,4 @@
+package aggregator
 
 type OperatorType int
 
