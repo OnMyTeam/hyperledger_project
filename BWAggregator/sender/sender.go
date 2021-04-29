@@ -4,7 +4,7 @@ Copyright 2020 IBM All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package sender
 
 import (
 	"encoding/json"
@@ -19,7 +19,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
 
-func main() {
+func InitSender() *gateway.Contract {
 	log.Println("============ application-golang starts ============")
 
 	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
@@ -33,7 +33,7 @@ func main() {
 	}
 
 	if !wallet.Exists("appUser") {
-		err = populateWallet(wallet)
+		err = PopulateWallet(wallet)
 		if err != nil {
 			log.Fatalf("Failed to populate wallet contents: %v", err)
 		}
@@ -64,12 +64,12 @@ func main() {
 	}
 
 	contract := network.GetContract("fabcar")
-	readChaincode(contract)
-
 	log.Println("============ application-golang ends ============")
+	return contract
+
 }
-func readChaincode(contract *gateway.Contract) ([]uint8, error) {
-	// var dat map[string]interface{}
+func ReadChaincode() ([]uint8, error) {
+	contract := InitSender()
 	result, err := contract.EvaluateTransaction("QueryCar", "CAR0")
 	fmt.Println(result)
 	if err != nil {
@@ -83,21 +83,24 @@ func readChaincode(contract *gateway.Contract) ([]uint8, error) {
 	fmt.Println("objmap, err1: ", objmap["amount"], err1)
 	return result, nil
 }
-func writeChaincode(contract *gateway.Contract) error {
-	result, err := readChaincode(contract)
+func WriteChaincode(functionname string, key string, value int) error {
+	fmt.Println("Receive function", functionname)
+	fmt.Println("Receive key", key)
+	fmt.Println("Receive value", value)
+	contract := InitSender()
 
-	result, err = contract.SubmitTransaction("BuyCar", "CAR0", string(result))
+	result, err := contract.SubmitTransaction(functionname, key, string(value))
 	if err != nil {
 		log.Fatalf("failed to evaluate transaction: %v", err)
 	}
 	log.Println(string(result))
 	return nil
 }
-func populateWallet(wallet *gateway.Wallet) error {
+func PopulateWallet(wallet *gateway.Wallet) error {
 	log.Println("============ Populating wallet ============")
 	credPath := filepath.Join(
 		"..",
-		"..",
+
 		"test-network",
 		"organizations",
 		"peerOrganizations",
