@@ -224,20 +224,26 @@ func (s *SmartContract) DeleteCar(ctx contractapi.TransactionContextInterface, i
 }
 
 // BuyCar decrease amount
-func (s *SmartContract) BuyCar(ctx contractapi.TransactionContextInterface, id string, value string) error {
-	var bytes []byte
-	bytes = []byte(value)
+func (s *SmartContract) BuyCar(ctx contractapi.TransactionContextInterface, id string, value int) error {
+	// var bytes []byte
+	// bytes = []byte(value)
+	// var car Car
+	// err := json.Unmarshal(bytes, &car)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Println("car =>", car)
+	// car.Amount = 500
+	// carJSON, err := json.Marshal(car)
+	// if err != nil {
+	// 	return err
+	// }
 	var car Car
-	err := json.Unmarshal(bytes, &car)
-	if err != nil {
-		return err
-	}
-	fmt.Println("car =>", car)
-	car.Amount = 500
+	car = Car{ID: "CAR0", Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko", Amount: value}
+	// fmt.Println("carJSON =>", carJSON)
 	carJSON, err := json.Marshal(car)
 	if err != nil {
 		return err
 	}
-	fmt.Println("carJSON =>", carJSON)
 	return ctx.GetStub().PutState(id, carJSON)
 }
