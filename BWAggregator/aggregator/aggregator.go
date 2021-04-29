@@ -3,6 +3,7 @@ package aggregator
 import (
 	"fmt"
 	protos "hyperledger_project/BWAggregator/protos"
+	sender "hyperledger_project/BWAggregator/sender"
 	"sync"
 	"time"
 )
@@ -11,7 +12,7 @@ type Aggregator struct {
 	BWTxChan        chan *protos.BWTransaction
 	BWTxSetChan     chan []*protos.BWTransaction
 	BWTxSet         []*protos.BWTransaction
-	AggregateResult map[string]Result
+	ResultAggregate map[string]Result
 }
 type Result struct {
 	FunctionName string
@@ -24,7 +25,7 @@ func Init() *Aggregator {
 
 		BWTxChan:        make(chan *protos.BWTransaction),
 		BWTxSetChan:     make(chan []*protos.BWTransaction),
-		AggregateResult: make(map[string]Result),
+		ResultAggregate: make(map[string]Result),
 	}
 	go aggregator.MakeBWTxset()
 	go aggregator.Aggregate()
@@ -67,23 +68,23 @@ func (aggregator *Aggregator) Aggregate() {
 			fmt.Println("=========== Aggregate ===========")
 			for _, BWTx := range BWTxset {
 				key := BWTx.Key
-				result := aggregator.AggregateResult[key]
+				result := aggregator.ResultAggregate[key]
 
 				//empty struct check
 				if result.FunctionName == "" {
 					result.FunctionName = BWTx.Functionname
 					result.Key = BWTx.Key
 					result.WriteValue = int(BWTx.Operand)
-					aggregator.AggregateResult[key] = result
+					aggregator.ResultAggregate[key] = result
 				} else {
 					// 사전 사후 검사
 					if result.WriteValue < int(BWTx.Precondition) && result.WriteValue > int(BWTx.Postcondition) {
 						fmt.Println("no!!!!!!!!")
-					} else {
+					} else { // Operator 별 연산
 						if BWTx.Operator == int32(ADD) {
 							result.WriteValue += int(BWTx.Operand)
 						}
-						aggregator.AggregateResult[key] = result
+						aggregator.ResultAggregate[key] = result
 					}
 				}
 				fmt.Println(result.FunctionName)
@@ -91,7 +92,10 @@ func (aggregator *Aggregator) Aggregate() {
 				fmt.Println(result.WriteValue)
 
 			}
-			fmt.Println(aggregator.AggregateResult)
+			if aggregator.ResultAggregate["CAR0"].FunctionName != "" {
+				sender.WriteChaincode(aggregator.ResultAggregate["CAR0"].FunctionName, aggregator.ResultAggregate["CAR0"].Key, aggregator.ResultAggregate["CAR0"].WriteValue)
+			}
+
 			fmt.Println("=========== EndAggregate ===========")
 		}
 
