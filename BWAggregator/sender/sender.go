@@ -7,13 +7,12 @@ SPDX-License-Identifier: Apache-2.0
 package sender
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
+	"strconv"
 
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
@@ -41,7 +40,6 @@ func InitSender() *gateway.Contract {
 
 	ccpPath := filepath.Join(
 		"..",
-		"..",
 		"test-network",
 		"organizations",
 		"peerOrganizations",
@@ -64,32 +62,35 @@ func InitSender() *gateway.Contract {
 	}
 
 	contract := network.GetContract("fabcar")
+	// WriteChaincode("AAA", "BBB", 1, contract)
 	log.Println("============ application-golang ends ============")
 	return contract
 
 }
-func ReadChaincode() ([]uint8, error) {
-	contract := InitSender()
-	result, err := contract.EvaluateTransaction("QueryCar", "CAR0")
-	fmt.Println(result)
-	if err != nil {
-		log.Fatalf("Failed to evaluate transaction: %v", err)
-	}
-	log.Println("init ->", result)
-	log.Println("Type ->", reflect.TypeOf(result))
-	log.Println("string ->", string(result))
-	var objmap map[string]interface{}
-	err1 := json.Unmarshal(result, &objmap)
-	fmt.Println("objmap, err1: ", objmap["amount"], err1)
-	return result, nil
-}
+
+// func ReadChaincode() ([]uint8, error) {
+// 	contract := InitSender()
+// 	result, err := contract.EvaluateTransaction("QueryCar", "CAR0")
+// 	fmt.Println(result)
+// 	if err != nil {
+// 		log.Fatalf("Failed to evaluate transaction: %v", err)
+// 	}
+// 	log.Println("init ->", result)
+// 	log.Println("Type ->", reflect.TypeOf(result))
+// 	log.Println("string ->", string(result))
+// 	var objmap map[string]interface{}
+// 	err1 := json.Unmarshal(result, &objmap)
+// 	fmt.Println("objmap, err1: ", objmap["amount"], err1)
+// 	return result, nil
+// }
 func WriteChaincode(functionname string, key string, value int) error {
+	contract := InitSender()
 	fmt.Println("Receive function", functionname)
 	fmt.Println("Receive key", key)
 	fmt.Println("Receive value", value)
-	contract := InitSender()
+	// contract := InitSender()
 
-	result, err := contract.SubmitTransaction(functionname, key, string(value))
+	result, err := contract.SubmitTransaction(functionname, key, strconv.Itoa(value))
 	if err != nil {
 		log.Fatalf("failed to evaluate transaction: %v", err)
 	}
