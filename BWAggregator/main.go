@@ -23,13 +23,8 @@ func (aggregator *BWAggregatorServer) ReceiveBWTransaction(ctx context.Context, 
 	// BWTxset생성을 위한 메세지 전달
 	aggregator.GetBWTxSendChannel() <- req
 
-	var message string
-	message = "success"
-	b := []byte(message)
-	return &protos.BWTransactionResponse{
-		Response: 2,
-		Payload:  b,
-	}, nil
+	BWTxResponse := <-aggregator.GetBWTxResponseReceiveChannel()
+	return BWTxResponse, nil
 }
 
 func main() {
@@ -37,7 +32,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-
 	grpcServer := grpc.NewServer()
 	var bWAggregatorServer BWAggregatorServer
 	bWAggregatorServer.Aggregator = *aggregator.Init()
