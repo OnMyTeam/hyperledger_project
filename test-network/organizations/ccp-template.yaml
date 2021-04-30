@@ -1,6 +1,26 @@
 ---
 name: test-network-org${ORG}
 version: 1.0.0
+channels:
+  mychannel:
+    orderers:
+      - orderer.example.com
+      
+    peers:
+      peer0.org1.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+orderers:
+  orderer.example.com:
+    url: grpcs://localhost:7050
+    tlsCACerts:
+      pem: |
+          ${ORDERERPEM}
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      hostnameOverride: orderer.example.com           
 client:
   organization: Org${ORG}
   connection:
