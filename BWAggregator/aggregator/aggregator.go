@@ -10,9 +10,10 @@ import (
 
 type Aggregator struct {
 	BWTxChan        chan *protos.BWTransaction
+	BWTxRsponseChan chan *protos.BWTransactionResponse
 	BWTxSetChan     chan []*protos.BWTransaction
 	BWTxSet         []*protos.BWTransaction
-	ResultAggregate map[string]Result
+	ResultAggregate map[string]*Result
 }
 type Result struct {
 	FunctionName string
@@ -24,8 +25,9 @@ func Init() *Aggregator {
 	aggregator := &Aggregator{
 
 		BWTxChan:        make(chan *protos.BWTransaction),
+		BWTxRsponseChan: make(chan *protos.BWTransactionResponse),
 		BWTxSetChan:     make(chan []*protos.BWTransaction),
-		ResultAggregate: make(map[string]Result),
+		ResultAggregate: make(map[string]*Result),
 	}
 	go aggregator.MakeBWTxset()
 	go aggregator.Aggregate()
@@ -62,40 +64,65 @@ func (aggregator *Aggregator) MakeBWTxset() {
 
 // Aggregate BWTxset을 활용하여 연산 후 각 키에 Write할 value생성
 func (aggregator *Aggregator) Aggregate() {
+	var bytes []byte
+
 	for {
 		select {
 		case BWTxset := <-aggregator.GetBWTxSetReceiveChannel():
 			fmt.Println("=========== Aggregate ===========")
+			count := 0
 			for _, BWTx := range BWTxset {
 				key := BWTx.Key
 				result := aggregator.ResultAggregate[key]
 
 				//empty struct check
-				if result.FunctionName == "" {
-					result.FunctionName = BWTx.Functionname
-					result.Key = BWTx.Key
-					result.WriteValue = int(BWTx.Operand)
+				if result == nil {
+
+					result = &Result{
+						FunctionName: BWTx.Functionname,
+						Key:          BWTx.Key,
+						WriteValue:   int(BWTx.Operand),
+					}
 					aggregator.ResultAggregate[key] = result
+					bytes = []byte(BWTx.Key + " " + BWTx.Fieldname + " SUCCESS")
 				} else {
 					// 사전 사후 검사
-					if result.WriteValue < int(BWTx.Precondition) && result.WriteValue > int(BWTx.Postcondition) {
-						fmt.Println("no!!!!!!!!")
+					if result.WriteValue < int(BWTx.Precondition) || result.WriteValue > int(BWTx.Postcondition) {
+
+						bytes = []byte(BWTx.Key + " " + BWTx.Fieldname + " REJECT")
+
 					} else { // Operator 별 연산
+						tempWriteValue := result.WriteValue
 						if BWTx.Operator == int32(ADD) {
-							result.WriteValue += int(BWTx.Operand)
+							tempWriteValue += int(BWTx.Operand)
 						}
-						aggregator.ResultAggregate[key] = result
+
+						if tempWriteValue < int(BWTx.Precondition) || tempWriteValue > int(BWTx.Postcondition) {
+
+							bytes = []byte(BWTx.Key + " " + BWTx.Fieldname + " REJECT")
+
+						} else {
+							result.WriteValue = tempWriteValue
+							aggregator.ResultAggregate[key] = result
+							bytes = []byte(BWTx.Key + " " + BWTx.Fieldname + " SUCCESS")
+						}
+
 					}
 				}
-				fmt.Println(result.FunctionName)
-				fmt.Println(result.Key)
-				fmt.Println(result.WriteValue)
+				aggregator.GetBWTxesponseSendChannel() <- &protos.BWTransactionResponse{
+					Response: int32(count),
+					Payload:  bytes,
+				}
+				count++
 
 			}
-			if aggregator.ResultAggregate["CAR0"].FunctionName != "" {
-				sender.WriteChaincode(aggregator.ResultAggregate["CAR0"].FunctionName, aggregator.ResultAggregate["CAR0"].Key, aggregator.ResultAggregate["CAR0"].WriteValue)
-			}
 
+			for key, result := range aggregator.ResultAggregate {
+				fmt.Println(key, result)
+				sender.WriteChaincode(result.FunctionName, result.Key, result.WriteValue)
+
+			}
+			aggregator.ResultAggregate = make(map[string]*Result)
 			fmt.Println("=========== EndAggregate ===========")
 		}
 
@@ -112,6 +139,12 @@ func (aggregator *Aggregator) GetBWTxReceiveChannel() <-chan *protos.BWTransacti
 }
 func (aggregator *Aggregator) GetBWTxSendChannel() chan<- *protos.BWTransaction {
 	return aggregator.BWTxChan
+}
+func (aggregator *Aggregator) GetBWTxResponseReceiveChannel() <-chan *protos.BWTransactionResponse {
+	return aggregator.BWTxRsponseChan
+}
+func (aggregator *Aggregator) GetBWTxesponseSendChannel() chan<- *protos.BWTransactionResponse {
+	return aggregator.BWTxRsponseChan
 }
 func (aggregator *Aggregator) GetBWTxSetReceiveChannel() <-chan []*protos.BWTransaction {
 	return aggregator.BWTxSetChan
