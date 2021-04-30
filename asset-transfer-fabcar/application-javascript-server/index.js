@@ -15,27 +15,32 @@ const packageDefinition = protoLoader.loadSync(
 
 const BWAggregatorProto = grpc.loadPackageDefinition(packageDefinition).protos;
 
-async function main(amount) {
+async function main(key, fieldname, amount) {
   var client = new BWAggregatorProto.Aggregator('localhost:9000',
                                        grpc.credentials.createInsecure());
 
   var data = {
     functionname: "BuyCar",
-    key: "CAR0",
-    fieldname: "Amount",
-    operator: 1,
+    key: key,
+    fieldname: fieldname,
+    operator: 0,
     operand: 1,
     precondition: 0,
     postcondition: amount
   }
   client.ReceiveBWTransaction(data, function(err, response) {
   
-    console.log('return:', response.response);
+    console.log('return:', response.response, response.payload.toString());
   });
 }
-main(999);
-main(998);
-main(997);
-main(996);
-main(996);
+main("CAR0","AA",3);
+main("CAR0","BB",3);
+main("CAR0","CC",3);
+main("CAR0","DD",3);
+main("CAR0","EE",3);
+main("CAR1","FF",3);
+main("CAR1","GG",3);
+main("CAR1","HH",3);
+main("CAR1","II",3);
+main("CAR1","JJ",3);
 
