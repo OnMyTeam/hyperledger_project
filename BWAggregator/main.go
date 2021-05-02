@@ -7,6 +7,7 @@ import (
 
 	aggregator "hyperledger_project/BWAggregator/aggregator"
 	protos "hyperledger_project/BWAggregator/protos"
+	sender "hyperledger_project/BWAggregator/sender"
 
 	"google.golang.org/grpc"
 )
@@ -34,10 +35,11 @@ func main() {
 	}
 	grpcServer := grpc.NewServer()
 	var bWAggregatorServer BWAggregatorServer
-	bWAggregatorServer.Aggregator = *aggregator.Init()
+	contract := sender.InitSender()
+	bWAggregatorServer.Aggregator = *aggregator.Init(contract)
 	protos.RegisterAggregatorServer(grpcServer, &bWAggregatorServer)
 
-	log.Printf("start gRPC server on !!%s port", portNumber)
+	log.Printf("Aggregate gRPC server Start!! %s port", portNumber)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
