@@ -22,6 +22,8 @@ type Aggregator struct {
 type WriteValue struct {
 	FunctionName string
 	Key          string
+	Value        string
+	WriteColumn  string
 	WriteValue   int
 }
 
@@ -84,10 +86,12 @@ func (aggregator *Aggregator) Aggregate() {
 
 				//empty struct check
 				if result == nil {
-
+					resultValue, _ := sender.ReadChaincode(BWTx.Functionname, BWTx.Key)
 					result = &WriteValue{
 						FunctionName: BWTx.Functionname,
 						Key:          BWTx.Key,
+						Value:        resultValue,
+						WriteColumn:  BWTx.Fieldname,
 						WriteValue:   int(BWTx.Operand),
 					}
 					aggregator.WriteValueSet[key] = result
@@ -141,7 +145,8 @@ func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
 			log.Println("=========== SendTxProposals ===========")
 			for key, result := range WriteValueSet {
 				log.Println(key, result)
-				sender.WriteChaincode(contract, result.FunctionName, result.Key, result.WriteValue)
+				writeValue := 1000 - result.WriteValue
+				sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, writeValue)
 
 			}
 		}
