@@ -208,6 +208,8 @@ function createOrgs() {
 
   infoln "Generating CCP files for Org1 and Org2"
   ./organizations/ccp-generate.sh
+  node ../asset-transfer-fabcar/application-javascript-server/enrollAdmin.js
+  node ../asset-transfer-fabcar/application-javascript-server/registerUser.js
 }
 
 # Once you create the organization crypto material, you need to create the
@@ -310,6 +312,7 @@ function deployCC() {
   if [ $? -ne 0 ]; then
     fatalln "Deploying chaincode failed"
   fi
+  ./fabcar_test.sh InitLedger
 }
 
 
@@ -334,6 +337,10 @@ function networkDown() {
     # docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf addOrg3/fabric-ca/org3/msp addOrg3/fabric-ca/org3/tls-cert.pem addOrg3/fabric-ca/org3/ca-cert.pem addOrg3/fabric-ca/org3/IssuerPublicKey addOrg3/fabric-ca/org3/IssuerRevocationPublicKey addOrg3/fabric-ca/org3/fabric-ca-server.db'
     # remove channel and script artifacts
     docker run --rm -v $(pwd):/data busybox sh -c 'cd /data && rm -rf channel-artifacts log.txt *.tar.gz'
+
+    # delete wallet
+    rm -rf ../BWAggregator/wallet/
+    rm -rf ../asset-transfer-fabcar/application-javascript-server/wallet/
   fi
 }
 
