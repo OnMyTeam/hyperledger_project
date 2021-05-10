@@ -35,9 +35,9 @@ function main(key, fieldname, amount) {
 }
 
 for( var i=0; i <=process.argv[2]; i++){
-  main("CAR0","Amount", 100);
-  main("CAR1","Amount", 100);
-  main("CAR2","Amount", 100);
+  main("CAR0","amount", 100);
+  main("CAR1","amount", 100);
+  main("CAR2","amount", 100);
 }
 
 
