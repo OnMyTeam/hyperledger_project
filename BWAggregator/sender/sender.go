@@ -7,13 +7,11 @@ SPDX-License-Identifier: Apache-2.0
 package sender
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strconv"
 
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
@@ -69,28 +67,28 @@ func InitSender() *gateway.Contract {
 
 }
 
-func ReadChaincode() ([]uint8, error) {
+func ReadChaincode(funtionname string, key string) (string, error) {
 	contract := InitSender()
 	result, err := contract.EvaluateTransaction("QueryCar", "CAR0")
 
 	if err != nil {
 		log.Fatalf("Failed to evaluate transaction: %v", err)
 	}
-	log.Println("init ->", result)
-	log.Println("Type ->", reflect.TypeOf(result))
-	log.Println("string ->", string(result))
-	var objmap map[string]interface{}
-	err1 := json.Unmarshal(result, &objmap)
-	fmt.Println("objmap, err1: ", objmap["amount"], err1)
-	return result, nil
+	// log.Println("init ->", result)
+	// log.Println("Type ->", reflect.TypeOf(result))
+	// log.Println("string ->", string(result))
+	// var objmap map[string]interface{}
+	// err1 := json.Unmarshal(result, &objmap)
+	// fmt.Println("objmap, err1: ", objmap["amount"], err1)
+	return string(result), nil
 }
-func WriteChaincode(contract *gateway.Contract, functionname string, key string, value int) error {
+func WriteChaincode(contract *gateway.Contract, functionname string, key string, value string, writecolumn string, writevalue int) error {
 
 	log.Println("Receive function", functionname)
 	log.Println("Receive key", key)
-	log.Println("Receive value", value)
+	log.Println("Receive writevalue", writevalue)
 
-	result, err := contract.SubmitTransaction(functionname, key, strconv.Itoa(value))
+	result, err := contract.SubmitTransaction(functionname, key, value, writecolumn, strconv.Itoa(writevalue))
 	if err != nil {
 		log.Fatalf("failed to evaluate transaction: %v", err)
 	}
