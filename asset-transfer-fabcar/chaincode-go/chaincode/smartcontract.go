@@ -3,6 +3,7 @@ package chaincode
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"reflect"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -67,6 +68,8 @@ func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, id
 		return nil, err
 	}
 	fmt.Println("car => ", car)
+	fmt.Println("&car => ", &car)
+	fmt.Println("car Type => ", reflect.TypeOf(car))
 	return &car, nil
 }
 
@@ -144,10 +147,12 @@ func (s *SmartContract) AddCar(ctx contractapi.TransactionContextInterface, id s
 		Colour: colour,
 		Owner:  owner,
 	}
+	log.Println("car Add : ", car)
 	carJSON, err := json.Marshal(car)
 	if err != nil {
 		return err
 	}
+	log.Println("carJSON : ", carJSON)
 	err = ctx.GetStub().PutState(id, carJSON)
 	if err != nil {
 		return fmt.Errorf("Failed to put to world state. %v", err)
@@ -163,6 +168,7 @@ func (s *SmartContract) ChangeOwner(ctx contractapi.TransactionContextInterface,
 	}
 
 	car.Owner = newOwner
+	log.Println("ChangeOwner carJSON : ", car)
 	carJSON, err := json.Marshal(car)
 	if err != nil {
 		return err
@@ -224,26 +230,40 @@ func (s *SmartContract) DeleteCar(ctx contractapi.TransactionContextInterface, i
 }
 
 // BuyCar decrease amount
-func (s *SmartContract) BuyCar(ctx contractapi.TransactionContextInterface, id string, value string) error {
-	// var bytes []byte
-	// bytes = []byte(value)
-	// var car Car
-	// err := json.Unmarshal(bytes, &car)
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("car =>", car)
-	// car.Amount = 500
-	// carJSON, err := json.Marshal(car)
-	// if err != nil {
-	// 	return err
-	// }
+func (s *SmartContract) BuyCar(ctx contractapi.TransactionContextInterface, id string, values string, writecolumn string, writevalue string) error {
+	log.Println("values : ", values)
+	log.Println("WriteColumn : ", writecolumn)
+	log.Println("writevalue : ", writevalue)
+	var bytes []byte
+	bytes = []byte(values)
+
 	var car Car
-	car = Car{ID: "CAR0", Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko", Amount: value}
-	// fmt.Println("carJSON =>", carJSON)
+	var objmap map[string]interface{}
+	err1 := json.Unmarshal(bytes, &objmap)
+	if err1 != nil {
+		fmt.Println("error")
+	}
+
+	objmap[writecolumn] = writevalue
+	ID := objmap["ID"].(string)
+	amount := objmap[writecolumn].(string)
+	make := objmap["make"].(string)
+	model := objmap["model"].(string)
+	owner := objmap["owner"].(string)
+	colour := objmap["colour"].(string)
+	car = Car{
+		ID:     ID,
+		Make:   make,
+		Model:  model,
+		Colour: colour,
+		Owner:  owner,
+		Amount: amount,
+	}
 	carJSON, err := json.Marshal(car)
 	if err != nil {
 		return err
 	}
+
+	log.Println("carJSON : ", carJSON)
 	return ctx.GetStub().PutState(id, carJSON)
 }
