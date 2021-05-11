@@ -1,9 +1,12 @@
 package aggregator
 
 import (
+	"encoding/json"
+	"fmt"
 	protos "hyperledger_project/BWAggregator/protos"
 	sender "hyperledger_project/BWAggregator/sender"
 	"log"
+	"strconv"
 	"sync"
 	"time"
 
@@ -138,14 +141,24 @@ func (aggregator *Aggregator) Aggregate() {
 }
 
 func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
-
+	var bytes []byte
 	for {
 		select {
 		case WriteValueSet := <-aggregator.GetWriteValueSetReceiveChannel():
 			log.Println("=========== SendTxProposals ===========")
 			for key, result := range WriteValueSet {
 				log.Println(key, result)
-				writeValue := 1000 - result.WriteValue
+				resultValue, _ := sender.ReadChaincode(result.FunctionName, result.Key)
+
+				bytes = []byte(resultValue)
+				var objmap map[string]interface{}
+				err1 := json.Unmarshal(bytes, &objmap)
+				if err1 != nil {
+					fmt.Println("error")
+				}
+
+				amount, _ := strconv.Atoi(objmap[result.WriteColumn].(string))
+				writeValue := amount - result.WriteValue
 				sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, writeValue)
 
 			}
