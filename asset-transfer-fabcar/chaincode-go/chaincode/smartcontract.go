@@ -27,11 +27,11 @@ type Car struct {
 // InitLedger adds a base set of cars to the ledger
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	cars := []Car{
-		Car{ID: "CAR0", Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko", Amount: "1000"},
-		Car{ID: "CAR1", Make: "Ford", Model: "Mustang", Colour: "red", Owner: "Brad", Amount: "1000"},
-		Car{ID: "CAR2", Make: "Hyundai", Model: "Tucson", Colour: "green", Owner: "Jin Soo", Amount: "1000"},
-		Car{ID: "CAR3", Make: "Volkswagen", Model: "Passat", Colour: "yellow", Owner: "Max", Amount: "1000"},
-		Car{ID: "CAR4", Make: "Tesla", Model: "S", Colour: "black", Owner: "Adriana", Amount: "1000"},
+		Car{ID: "CAR0", Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko", Amount: "100"},
+		Car{ID: "CAR1", Make: "Ford", Model: "Mustang", Colour: "red", Owner: "Brad", Amount: "100"},
+		Car{ID: "CAR2", Make: "Hyundai", Model: "Tucson", Colour: "green", Owner: "Jin Soo", Amount: "100"},
+		Car{ID: "CAR3", Make: "Volkswagen", Model: "Passat", Colour: "yellow", Owner: "Max", Amount: "100"},
+		Car{ID: "CAR4", Make: "Tesla", Model: "S", Colour: "black", Owner: "Adriana", Amount: "100"},
 	}
 
 	for _, car := range cars {
