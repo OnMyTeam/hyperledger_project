@@ -1,0 +1,1 @@
+sudo cp -r $HOME/go/src/fabric-samples/test-network/organizations/ ./
