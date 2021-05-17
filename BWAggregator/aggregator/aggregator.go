@@ -6,7 +6,6 @@ import (
 	protos "hyperledger_project/BWAggregator/protos"
 	sender "hyperledger_project/BWAggregator/sender"
 	"log"
-	"strconv"
 	"sync"
 	"time"
 
@@ -157,7 +156,7 @@ func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
 					fmt.Println("error")
 				}
 
-				amount, _ := strconv.Atoi(objmap[result.WriteColumn].(string))
+				amount, _ := objmap[result.WriteColumn].(int)
 				writeValue := amount - result.WriteValue
 				sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, writeValue)
 
