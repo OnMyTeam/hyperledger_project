@@ -20,7 +20,7 @@ services:
     environment:
       - DATABASE_DATABASE=fabricexplorer
       - DATABASE_USERNAME=hppoc
-      - DATABASE_PASSWORD=password
+      - DATABASE_PASSWORD=hppocpwd
     healthcheck:
       test: "pg_isready -h localhost -p 5432 -q -U postgres"
       interval: 30s
@@ -30,7 +30,9 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - mynetwork.com
-
+    ports:
+      - 32:32
+      - 5432:5432
   explorer.mynetwork.com:
     image: hyperledger/explorer:latest
     container_name: explorer.mynetwork.com

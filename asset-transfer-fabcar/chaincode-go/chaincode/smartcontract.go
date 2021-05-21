@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strconv"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -21,17 +22,17 @@ type Car struct {
 	Model  string `json:"model"`
 	Colour string `json:"colour"`
 	Owner  string `json:"owner"`
-	Amount string `json:"amount"`
+	Amount int    `json:"amount"`
 }
 
 // InitLedger adds a base set of cars to the ledger
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	cars := []Car{
-		Car{ID: "CAR0", Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko", Amount: "100"},
-		Car{ID: "CAR1", Make: "Ford", Model: "Mustang", Colour: "red", Owner: "Brad", Amount: "100"},
-		Car{ID: "CAR2", Make: "Hyundai", Model: "Tucson", Colour: "green", Owner: "Jin Soo", Amount: "100"},
-		Car{ID: "CAR3", Make: "Volkswagen", Model: "Passat", Colour: "yellow", Owner: "Max", Amount: "100"},
-		Car{ID: "CAR4", Make: "Tesla", Model: "S", Colour: "black", Owner: "Adriana", Amount: "100"},
+		Car{ID: "CAR0", Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko", Amount: 1000},
+		Car{ID: "CAR1", Make: "Ford", Model: "Mustang", Colour: "red", Owner: "Brad", Amount: 1000},
+		Car{ID: "CAR2", Make: "Hyundai", Model: "Tucson", Colour: "green", Owner: "Jin Soo", Amount: 1000},
+		Car{ID: "CAR3", Make: "Volkswagen", Model: "Passat", Colour: "yellow", Owner: "Max", Amount: 1000},
+		Car{ID: "CAR4", Make: "Tesla", Model: "S", Colour: "black", Owner: "Adriana", Amount: 1000},
 	}
 
 	for _, car := range cars {
@@ -146,6 +147,7 @@ func (s *SmartContract) AddCar(ctx contractapi.TransactionContextInterface, id s
 		Model:  model,
 		Colour: colour,
 		Owner:  owner,
+		Amount: 1000,
 	}
 	log.Println("car Add : ", car)
 	carJSON, err := json.Marshal(car)
@@ -230,7 +232,24 @@ func (s *SmartContract) DeleteCar(ctx contractapi.TransactionContextInterface, i
 }
 
 // BuyCar decrease amount
-func (s *SmartContract) BuyCar(ctx contractapi.TransactionContextInterface, id string, values string, writecolumn string, writevalue string) error {
+func (s *SmartContract) BuyCarBefore(ctx contractapi.TransactionContextInterface, id string) error {
+	car, err := s.QueryCar(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	car.Amount = car.Amount - 1
+
+	carJSON, err := json.Marshal(car)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState(id, carJSON)
+}
+
+// BuyCar decrease amount
+func (s *SmartContract) BuyCarAfter(ctx contractapi.TransactionContextInterface, id string, values string, writecolumn string, writevalue string) error {
 	log.Println("values : ", values)
 	log.Println("WriteColumn : ", writecolumn)
 	log.Println("writevalue : ", writevalue)
@@ -246,7 +265,7 @@ func (s *SmartContract) BuyCar(ctx contractapi.TransactionContextInterface, id s
 
 	objmap[writecolumn] = writevalue
 	ID := objmap["ID"].(string)
-	amount := objmap[writecolumn].(string)
+	amount, _ := strconv.Atoi(objmap[writecolumn].(string))
 	make := objmap["make"].(string)
 	model := objmap["model"].(string)
 	owner := objmap["owner"].(string)
