@@ -104,3 +104,7 @@ dist
 .tern-port
 # wallet
 asset-transfer-fabcar/application-javascript-server/wallet/
+BWAggregator/wallet/
+
+# connection-profile
+explorer/connection-profile/*
