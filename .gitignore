@@ -104,3 +104,9 @@ dist
 .tern-port
 # wallet
 asset-transfer-fabcar/application-javascript-server/wallet/
+BWAggregator/wallet/
+explorer/organizations/fabric-ca/ordererOrg/*
+explorer/organizations/fabric-ca/org1/*
+explorer/organizations/fabric-ca/org2/*
+explorer/organizations/ordererOrganizations/*
+explorer/organizations/peerOrganizations/*
