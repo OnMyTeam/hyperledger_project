@@ -10,9 +10,15 @@ do
 
     echo "Running loop seq "$i
 	random_num=$(cat /dev/urandom | tr -dc '0-2' | fold -w 1 | sed 1q)
-	tx_num=$(cat /dev/urandom | tr -dc '30-100' | fold -w 1 | sed 1q)
-	# node index.js $tx_num
-	node invoke.js $tx_num
+	tx_num="$(($RANDOM% 50+30))"
+	echo "TX_NUM ${tx_num}"
+	node index.js $tx_num
+
+	# for i in $tx_num
+
+	# do
+	# curl -w "\n" -d '{"id":"CAR0"}' -H "Content-Type: application/json" -X POST http://localhost:8000/api/buycar
+	# done
 	sleep $random_num
     # some instructions
 
