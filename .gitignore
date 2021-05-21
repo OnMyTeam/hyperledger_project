@@ -105,6 +105,14 @@ dist
 # wallet
 asset-transfer-fabcar/application-javascript-server/wallet/
 BWAggregator/wallet/
+<<<<<<< HEAD
 
 # connection-profile
 explorer/connection-profile/*
+=======
+explorer/organizations/fabric-ca/ordererOrg/*
+explorer/organizations/fabric-ca/org1/*
+explorer/organizations/fabric-ca/org2/*
+explorer/organizations/ordererOrganizations/*
+explorer/organizations/peerOrganizations/*
+>>>>>>> c5d50259c9e92b78593102c39c6d1dd54adfcdd5
