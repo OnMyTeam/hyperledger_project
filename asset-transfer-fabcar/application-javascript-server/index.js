@@ -20,7 +20,7 @@ function main(key, fieldname, amount) {
                                        grpc.credentials.createInsecure());
 
   var data = {
-    functionname: "BuyCar",
+    functionname: "BuyCarAfter",
     key: key,
     fieldname: fieldname,
     operator: 0,
@@ -35,9 +35,7 @@ function main(key, fieldname, amount) {
 }
 
 for( var i=0; i <=process.argv[2]; i++){
-  main("CAR0","amount", 100);
-  main("CAR1","amount", 100);
-  main("CAR2","amount", 100);
+  main("CAR0","amount", 1000);
 }
 
 
