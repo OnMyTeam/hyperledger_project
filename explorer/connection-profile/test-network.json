@@ -38,17 +38,11 @@
 		"Org1MSP": {
 			"mspid": "Org1MSP",
 			"adminPrivateKey": {
-<<<<<<< HEAD
-				"path": "/tmp/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/f01860472325619f8b99d70cf58680cd9117aa809daec6d1cd4db8cb660b29e2_sk"
-			},
-			"peers": ["peer0.org1.example.com"],
-=======
-				"path": "/tmp/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/188c160d9b205c28ed51051e4e5a4841ccac8403c1c1e167d977fd8de66cb210_sk"
+				"path": "/tmp/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/c11a4bd00fd42946fd7dac516ba5e40de138596453894bec9dfca03418d1a30f_sk"
 			},
 			"peers": [
 				"peer0.org1.example.com"
 			],
->>>>>>> e3cf39c67151761010dfb280b05e2a1919648a0f
 			"signedCert": {
 				"path": "/tmp/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/cert.pem"
 			}
@@ -62,8 +56,4 @@
 			"url": "grpcs://peer0.org1.example.com:7051"
 		}
 	}
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> e3cf39c67151761010dfb280b05e2a1919648a0f
