@@ -1,27 +1,37 @@
 
 
-echo $random_num
 
-SET=$(seq 0 100)
-
-for i in $SET
-
+total_tx_num=1000
+tx_num=0
+max_num=50
+min_num=30
+while [ $tx_num -le $total_tx_num ]
 do
-
-    echo "Running loop seq "$i
-	random_num=$(cat /dev/urandom | tr -dc '0-2' | fold -w 1 | sed 1q)
-	tx_num="$(($RANDOM% 50+30))"
-	echo "TX_NUM ${tx_num}"
-	node index.js $tx_num
-
-	# for i in $tx_num
-
-	# do
-	# curl -w "\n" -d '{"id":"CAR0"}' -H "Content-Type: application/json" -X POST http://localhost:8000/api/buycar
-	# done
+	
+    
+	random_num=$(cat /dev/urandom | tr -dc '1-2' | fold -w 1 | sed 1q)
+	send_tx_num=$(($RANDOM% $max_num+$min_num))
+	remain=$((total_tx_num-tx_num))
+	if [ ${remain} -le $((max_num+min_num)) ] && [ ${remain} -ge $min_num ]; then
+		send_tx_num=$remain
+	fi
+	tx_num=$((tx_num+send_tx_num))
+	
+	# # sendBWTransaction
+	node index.js $send_tx_num
+	
+	# curl -w "\n" \
+	# 	-d '{"id":"CAR0", "txnum":'${send_tx_num}'}' \
+	# 	-H "Content-Type: application/json" \
+	# 	-X POST http://localhost:8000/api/buycar
 	sleep $random_num
+	echo "send Tx_num ${send_tx_num}"
+	echo "Total Tx_num ${tx_num}"
+	if [ $tx_num -eq $total_tx_num ]; then
+		tx_num=$((tx_num+1))
+	fi
+	
     # some instructions
 
 done
-
 

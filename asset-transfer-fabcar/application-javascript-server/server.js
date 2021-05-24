@@ -367,7 +367,8 @@ app.post('/api/addcar/', async function (req, res) {
 app.post('/api/buycar/', async function (req, res) {
     try {
         var id = req.body.id;
-
+        var tx_num = req.body.txnum;
+        console.log("Receive Tx_Num:", tx_num);
         // Build an in memory object with the network configuration (also known as a connection profile).
         const ccpPath = path.resolve(__dirname, '..', '..', 'test-network', 'organizations', 'peerOrganizations', 'org1.example.com', 'connection-org1.json');
         const fileExists = fs.existsSync(ccpPath);
@@ -421,7 +422,10 @@ app.post('/api/buycar/', async function (req, res) {
 		// This will be sent to both peers and if both peers endorse the transaction, the endorsed proposal will be sent
 		// to the orderer to be committed by each of the peer's to the channel ledger.
 		console.log('=> Submit Transaction: AddCar, adds new car with id, make, model, colour, and owner arguments');
-		await contract.submitTransaction('BuyCarBefore',id);        
+        for(var i=0; i<=tx_num; i++){
+            contract.submitTransaction('BuyCarBefore',id);
+        }
+		
         console.log('=> Transaction has been submitted');
         await gateway.disconnect();
         res.status(200).json({response: 'Transaction has been submitted', status: 200});
