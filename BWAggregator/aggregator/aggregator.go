@@ -156,9 +156,7 @@ func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
 					fmt.Println("error")
 				}
 
-				amount, _ := objmap[result.WriteColumn].(int)
-				writeValue := amount - result.WriteValue
-				sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, writeValue)
+				sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, result.WriteValue)
 
 			}
 		}
