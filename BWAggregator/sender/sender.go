@@ -91,6 +91,7 @@ func WriteChaincode(contract *gateway.Contract, functionname string, key string,
 	result, err := contract.SubmitTransaction(functionname, key, value, writecolumn, strconv.Itoa(writevalue))
 	if err != nil {
 		log.Fatalf("failed to evaluate transaction: %v", err)
+		return err
 	}
 	log.Println(string(result))
 	return nil
