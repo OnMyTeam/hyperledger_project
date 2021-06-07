@@ -156,7 +156,16 @@ func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
 					fmt.Println("error")
 				}
 
-				sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, result.WriteValue)
+				err := sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, result.WriteValue)
+
+				if err != nil {
+
+					bytes = []byte(" MVCC CONFLICT")
+					aggregator.GetBWTxesponseSendChannel() <- &protos.BWTransactionResponse{
+						Response: int32(500),
+						Payload:  bytes,
+					}
+				}
 
 			}
 		}
