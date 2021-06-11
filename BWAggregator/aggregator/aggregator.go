@@ -78,6 +78,7 @@ func (aggregator *Aggregator) MakeBWTxset() {
 func (aggregator *Aggregator) Aggregate() {
 	var bytes []byte
 	Response := 0
+	var tempWriteValueSet = make(map[string]*WriteValue)
 	for {
 		select {
 		case BWTxset := <-aggregator.GetBWTxSetReceiveChannel():
@@ -97,13 +98,18 @@ func (aggregator *Aggregator) Aggregate() {
 						WriteValue:   int(BWTx.Operand),
 					}
 					aggregator.WriteValueSet[key] = result
-					Response = 200
-					bytes = []byte(BWTx.Key + " SUCCESS")
+					tempWriteValueSet = aggregator.WriteValueSet
+
 				} else {
+
 					// 사전 사후 검사
 					if result.WriteValue < int(BWTx.Precondition) || result.WriteValue > int(BWTx.Postcondition) {
 
 						bytes = []byte(BWTx.Key + " REJECT")
+						aggregator.GetBWTxesponseSendChannel() <- &protos.BWTransactionResponse{
+							Response: int32(Response),
+							Payload:  bytes,
+						}
 
 					} else { // Operator 별 연산
 						tempWriteValue := result.WriteValue
@@ -117,7 +123,9 @@ func (aggregator *Aggregator) Aggregate() {
 
 						} else {
 							result.WriteValue = tempWriteValue
+
 							aggregator.WriteValueSet[key] = result
+							tempWriteValueSet = aggregator.WriteValueSet
 							Response = 200
 							bytes = []byte(BWTx.Key + " SUCCESS")
 						}
@@ -131,7 +139,8 @@ func (aggregator *Aggregator) Aggregate() {
 
 			}
 			log.Println("=========== EndAggregate ===========")
-			aggregator.GetWriteValueSetSendChannel() <- aggregator.WriteValueSet
+			aggregator.GetWriteValueSetSendChannel() <- tempWriteValueSet
+			tempWriteValueSet = make(map[string]*WriteValue)
 			// aggregator.WriteValueSet = make(map[string]*WriteValue)
 
 		}
@@ -156,16 +165,22 @@ func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
 					fmt.Println("error")
 				}
 
-				err := sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, result.WriteValue)
+				sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, result.WriteValue)
 
-				if err != nil {
+				// if err != nil {
 
-					bytes = []byte(" MVCC CONFLICT")
-					aggregator.GetBWTxesponseSendChannel() <- &protos.BWTransactionResponse{
-						Response: int32(500),
-						Payload:  bytes,
-					}
-				}
+				// 	bytes = []byte(" MVCC CONFLICT")
+				// 	aggregator.GetBWTxesponseSendChannel() <- &protos.BWTransactionResponse{
+				// 		Response: int32(500),
+				// 		Payload:  bytes,
+				// 	}
+				// } else {
+				// 	bytes = []byte(" VALID")
+				// 	aggregator.GetBWTxesponseSendChannel() <- &protos.BWTransactionResponse{
+				// 		Response: int32(200),
+				// 		Payload:  bytes,
+				// 	}
+				// }
 
 			}
 		}
