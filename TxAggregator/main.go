@@ -20,7 +20,7 @@ type BWAggregatorServer struct {
 }
 
 // ProcessProposal returns BWTransactionResponse
-func (aggregator *BWAggregatorServer) ReceiveBWTransaction(ctx context.Context, req *protos.BWTransaction) (*protos.BWTransactionResponse, error) {
+func (aggregator *BWAggregatorServer) ReceiveTaggedTransaction(ctx context.Context, req *protos.BWTransaction) (*protos.BWTransactionResponse, error) {
 	// BWTxset생성을 위한 메세지 전달
 	aggregator.GetBWTxSendChannel() <- req
 

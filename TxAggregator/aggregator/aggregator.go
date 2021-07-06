@@ -1,10 +1,8 @@
 package aggregator
 
 import (
-	"encoding/json"
-	"fmt"
-	protos "hyperledger_project/BWAggregator/protos"
-	sender "hyperledger_project/BWAggregator/sender"
+	protos "hyperledger_project/TxAggregator/protos"
+	sender "hyperledger_project/TxAggregator/sender"
 	"log"
 	"sync"
 	"time"
@@ -13,13 +11,13 @@ import (
 )
 
 type Aggregator struct {
-	BWTxChan          chan *protos.BWTransaction
-	BWTxRsponseChan   chan *protos.BWTransactionResponse
-	BWTxSetChan       chan []*protos.BWTransaction
-	WriteValueSetChan chan map[string]*WriteValue
-	BWTxSet           []*protos.BWTransaction
-	WriteValueSet     map[string]*WriteValue
-	gatewayContract   *gateway.Contract
+	TaggedTxChan        chan *protos.TaggedTransaction
+	TaggedTxRsponseChan chan *protos.TaggedTransactionResponse
+	TaggedTxSetChan     chan []*protos.TaggedTransaction
+	WriteValueSetChan   chan map[string]*WriteValue
+	TaggedTxSet         []*protos.TaggedTransaction
+	WriteValueSet       map[string]*WriteValue
+	gatewayContract     *gateway.Contract
 }
 type WriteValue struct {
 	FunctionName string
@@ -32,39 +30,39 @@ type WriteValue struct {
 func Init(contract *gateway.Contract) *Aggregator {
 	aggregator := &Aggregator{
 
-		BWTxChan:          make(chan *protos.BWTransaction),
-		BWTxRsponseChan:   make(chan *protos.BWTransactionResponse),
-		BWTxSetChan:       make(chan []*protos.BWTransaction),
-		WriteValueSetChan: make(chan map[string]*WriteValue),
-		WriteValueSet:     make(map[string]*WriteValue),
-		gatewayContract:   contract,
+		TaggedTxChan:        make(chan *protos.TaggedTransaction),
+		TaggedTxRsponseChan: make(chan *protos.TaggedTransactionResponse),
+		TaggedTxSetChan:     make(chan []*protos.TaggedTransaction),
+		WriteValueSetChan:   make(chan map[string]*WriteValue),
+		WriteValueSet:       make(map[string]*WriteValue),
+		gatewayContract:     contract,
 	}
-	go aggregator.MakeBWTxset()
+	go aggregator.MakeTaggedTxset()
 	go aggregator.Aggregate()
 	go aggregator.SendTxProposals(contract)
 	return aggregator
 
 }
-func (aggregator *Aggregator) MakeBWTxset() {
+func (aggregator *Aggregator) MakeTaggedTxset() {
 	var mutex = &sync.Mutex{}
 
 	ticker := time.NewTicker(time.Millisecond * 1500)
 	for {
 		select {
-		case BWTx := <-aggregator.GetBWTxReceiveChannel():
-			log.Println("=========== ReceiveBWTxset ===========")
-			log.Println(BWTx)
-			aggregator.BWTxSet = append(aggregator.BWTxSet, BWTx)
-			log.Println("=========== EndReceiveBWTxset ===========")
+		case TaggedTx := <-aggregator.GetTaggedTxReceiveChannel():
+			log.Println("=========== ReceiveTaggedTxset ===========")
+			log.Println(TaggedTx)
+			aggregator.TaggedTxSet = append(aggregator.TaggedTxSet, TaggedTx)
+			log.Println("=========== EndReceiveTaggedTxset ===========")
 
 		case <-ticker.C:
-			log.Println("=========== MakeBWTxset ===========")
-			copyBWTxset := make([]*protos.BWTransaction, len(aggregator.BWTxSet))
+			log.Println("=========== MakeTaggedTxset ===========")
+			copyTaggedTxset := make([]*protos.TaggedTransaction, len(aggregator.TaggedTxSet))
 			mutex.Lock()
-			copy(copyBWTxset, aggregator.BWTxSet)
-			aggregator.BWTxSet = nil
-			log.Println("=========== EndMakeBWTxset ===========")
-			aggregator.GetBWTxSetSendChannel() <- copyBWTxset
+			copy(copyTaggedTxset, aggregator.TaggedTxSet)
+			aggregator.TaggedTxSet = nil
+			log.Println("=========== EndMakeTaggedTxset ===========")
+			aggregator.GetTaggedTxSetSendChannel() <- copyTaggedTxset
 			mutex.Unlock()
 			ticker = time.NewTicker(time.Millisecond * 1500)
 
@@ -74,28 +72,29 @@ func (aggregator *Aggregator) MakeBWTxset() {
 
 }
 
-// Aggregate BWTxset을 활용하여 연산 후 각 키에 Write할 value생성
+// Aggregate TaggedTxset을 활용하여 연산 후 각 키에 Write할 value생성
 func (aggregator *Aggregator) Aggregate() {
 	var bytes []byte
 	Response := 0
 	var tempWriteValueSet = make(map[string]*WriteValue)
 	for {
 		select {
-		case BWTxset := <-aggregator.GetBWTxSetReceiveChannel():
-			log.Println("=========== Aggregate ===========")
-			for _, BWTx := range BWTxset {
-				key := BWTx.Key
+
+		case TaggedTxset := <-aggregator.GetTaggedTxSetReceiveChannel():
+			log.Println("=========== StartAggregate ===========")
+			for _, TaggedTx := range TaggedTxset {
+				key := TaggedTx.Key
 				result := aggregator.WriteValueSet[key]
 
 				//empty struct check
 				if result == nil {
-					resultValue, _ := sender.ReadChaincode(BWTx.Functionname, BWTx.Key)
+					resultValue, _ := sender.ReadChaincode(TaggedTx.Functionname, TaggedTx.Key)
 					result = &WriteValue{
-						FunctionName: BWTx.Functionname,
-						Key:          BWTx.Key,
+						FunctionName: TaggedTx.Functionname,
+						Key:          TaggedTx.Key,
 						Value:        resultValue,
-						WriteColumn:  BWTx.Fieldname,
-						WriteValue:   int(BWTx.Operand),
+						WriteColumn:  TaggedTx.Fieldname,
+						WriteValue:   int(TaggedTx.Operand),
 					}
 					aggregator.WriteValueSet[key] = result
 					tempWriteValueSet = aggregator.WriteValueSet
@@ -103,23 +102,23 @@ func (aggregator *Aggregator) Aggregate() {
 				} else {
 
 					// 사전 사후 검사
-					if result.WriteValue < int(BWTx.Precondition) || result.WriteValue > int(BWTx.Postcondition) {
+					if result.WriteValue < int(TaggedTx.Precondition) || result.WriteValue > int(TaggedTx.Postcondition) {
 
-						bytes = []byte(BWTx.Key + " REJECT")
-						aggregator.GetBWTxesponseSendChannel() <- &protos.BWTransactionResponse{
+						bytes = []byte(TaggedTx.Key + " REJECT")
+						aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
 							Response: int32(Response),
 							Payload:  bytes,
 						}
 
 					} else { // Operator 별 연산
 						tempWriteValue := result.WriteValue
-						if BWTx.Operator == int32(ADD) {
-							tempWriteValue += int(BWTx.Operand)
+						if TaggedTx.Operator == int32(ADD) {
+							tempWriteValue += int(TaggedTx.Operand)
 						}
 
-						if tempWriteValue < int(BWTx.Precondition) || tempWriteValue > int(BWTx.Postcondition) {
+						if tempWriteValue < int(TaggedTx.Precondition) || tempWriteValue > int(TaggedTx.Postcondition) {
 							Response = 500
-							bytes = []byte(BWTx.Key + " " + BWTx.Fieldname + " REJECT")
+							bytes = []byte(TaggedTx.Key + " " + TaggedTx.Fieldname + " REJECT")
 
 						} else {
 							result.WriteValue = tempWriteValue
@@ -127,12 +126,12 @@ func (aggregator *Aggregator) Aggregate() {
 							aggregator.WriteValueSet[key] = result
 							tempWriteValueSet = aggregator.WriteValueSet
 							Response = 200
-							bytes = []byte(BWTx.Key + " SUCCESS")
+							bytes = []byte(TaggedTx.Key + " SUCCESS")
 						}
 
 					}
 				}
-				aggregator.GetBWTxesponseSendChannel() <- &protos.BWTransactionResponse{
+				aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
 					Response: int32(Response),
 					Payload:  bytes,
 				}
@@ -154,33 +153,24 @@ func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
 		select {
 		case WriteValueSet := <-aggregator.GetWriteValueSetReceiveChannel():
 			log.Println("=========== SendTxProposals ===========")
-			for key, result := range WriteValueSet {
-				log.Println(key, result)
-				resultValue, _ := sender.ReadChaincode(result.FunctionName, result.Key)
+			for _, result := range WriteValueSet {
 
-				bytes = []byte(resultValue)
-				var objmap map[string]interface{}
-				err1 := json.Unmarshal(bytes, &objmap)
-				if err1 != nil {
-					fmt.Println("error")
+				err := sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, result.WriteValue)
+
+				if err != nil {
+
+					bytes = []byte(" MVCC CONFLICT")
+					aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
+						Response: int32(500),
+						Payload:  bytes,
+					}
+				} else {
+					bytes = []byte(" VALID")
+					aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
+						Response: int32(200),
+						Payload:  bytes,
+					}
 				}
-
-				sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, result.WriteValue)
-
-				// if err != nil {
-
-				// 	bytes = []byte(" MVCC CONFLICT")
-				// 	aggregator.GetBWTxesponseSendChannel() <- &protos.BWTransactionResponse{
-				// 		Response: int32(500),
-				// 		Payload:  bytes,
-				// 	}
-				// } else {
-				// 	bytes = []byte(" VALID")
-				// 	aggregator.GetBWTxesponseSendChannel() <- &protos.BWTransactionResponse{
-				// 		Response: int32(200),
-				// 		Payload:  bytes,
-				// 	}
-				// }
 
 			}
 		}
@@ -188,24 +178,24 @@ func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
 	}
 }
 
-// GetBWTxReceiveChanneln Receive BWTx Chan
-func (aggregator *Aggregator) GetBWTxReceiveChannel() <-chan *protos.BWTransaction {
-	return aggregator.BWTxChan
+// GetTaggedTxReceiveChanneln Receive TaggedTx Chan
+func (aggregator *Aggregator) GetTaggedTxReceiveChannel() <-chan *protos.TaggedTransaction {
+	return aggregator.TaggedTxChan
 }
-func (aggregator *Aggregator) GetBWTxSendChannel() chan<- *protos.BWTransaction {
-	return aggregator.BWTxChan
+func (aggregator *Aggregator) GetTaggedTxSendChannel() chan<- *protos.TaggedTransaction {
+	return aggregator.TaggedTxChan
 }
-func (aggregator *Aggregator) GetBWTxResponseReceiveChannel() <-chan *protos.BWTransactionResponse {
-	return aggregator.BWTxRsponseChan
+func (aggregator *Aggregator) GetTaggedTxResponseReceiveChannel() <-chan *protos.TaggedTransactionResponse {
+	return aggregator.TaggedTxRsponseChan
 }
-func (aggregator *Aggregator) GetBWTxesponseSendChannel() chan<- *protos.BWTransactionResponse {
-	return aggregator.BWTxRsponseChan
+func (aggregator *Aggregator) GetTaggedTxesponseSendChannel() chan<- *protos.TaggedTransactionResponse {
+	return aggregator.TaggedTxRsponseChan
 }
-func (aggregator *Aggregator) GetBWTxSetReceiveChannel() <-chan []*protos.BWTransaction {
-	return aggregator.BWTxSetChan
+func (aggregator *Aggregator) GetTaggedTxSetReceiveChannel() <-chan []*protos.TaggedTransaction {
+	return aggregator.TaggedTxSetChan
 }
-func (aggregator *Aggregator) GetBWTxSetSendChannel() chan<- []*protos.BWTransaction {
-	return aggregator.BWTxSetChan
+func (aggregator *Aggregator) GetTaggedTxSetSendChannel() chan<- []*protos.TaggedTransaction {
+	return aggregator.TaggedTxSetChan
 }
 func (aggregator *Aggregator) GetWriteValueSetReceiveChannel() <-chan map[string]*WriteValue {
 	return aggregator.WriteValueSetChan

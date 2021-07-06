@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AggregatorClient interface {
-	ReceiveBWTransaction(ctx context.Context, in *BWTransaction, opts ...grpc.CallOption) (*BWTransactionResponse, error)
+	ReceiveTaggedTransaction(ctx context.Context, in *TaggedTransaction, opts ...grpc.CallOption) (*TaggedTransactionResponse, error)
 }
 
 type aggregatorClient struct {
@@ -29,9 +29,9 @@ func NewAggregatorClient(cc grpc.ClientConnInterface) AggregatorClient {
 	return &aggregatorClient{cc}
 }
 
-func (c *aggregatorClient) ReceiveBWTransaction(ctx context.Context, in *BWTransaction, opts ...grpc.CallOption) (*BWTransactionResponse, error) {
-	out := new(BWTransactionResponse)
-	err := c.cc.Invoke(ctx, "/protos.Aggregator/ReceiveBWTransaction", in, out, opts...)
+func (c *aggregatorClient) ReceiveTaggedTransaction(ctx context.Context, in *TaggedTransaction, opts ...grpc.CallOption) (*TaggedTransactionResponse, error) {
+	out := new(TaggedTransactionResponse)
+	err := c.cc.Invoke(ctx, "/protos.Aggregator/ReceiveTaggedTransaction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (c *aggregatorClient) ReceiveBWTransaction(ctx context.Context, in *BWTrans
 // All implementations must embed UnimplementedAggregatorServer
 // for forward compatibility
 type AggregatorServer interface {
-	ReceiveBWTransaction(context.Context, *BWTransaction) (*BWTransactionResponse, error)
+	ReceiveTaggedTransaction(context.Context, *TaggedTransaction) (*TaggedTransactionResponse, error)
 	mustEmbedUnimplementedAggregatorServer()
 }
 
@@ -50,8 +50,8 @@ type AggregatorServer interface {
 type UnimplementedAggregatorServer struct {
 }
 
-func (UnimplementedAggregatorServer) ReceiveBWTransaction(context.Context, *BWTransaction) (*BWTransactionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReceiveBWTransaction not implemented")
+func (UnimplementedAggregatorServer) ReceiveTaggedTransaction(context.Context, *TaggedTransaction) (*TaggedTransactionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReceiveTaggedTransaction not implemented")
 }
 func (UnimplementedAggregatorServer) mustEmbedUnimplementedAggregatorServer() {}
 
@@ -66,20 +66,20 @@ func RegisterAggregatorServer(s grpc.ServiceRegistrar, srv AggregatorServer) {
 	s.RegisterService(&Aggregator_ServiceDesc, srv)
 }
 
-func _Aggregator_ReceiveBWTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BWTransaction)
+func _Aggregator_ReceiveTaggedTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TaggedTransaction)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AggregatorServer).ReceiveBWTransaction(ctx, in)
+		return srv.(AggregatorServer).ReceiveTaggedTransaction(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.Aggregator/ReceiveBWTransaction",
+		FullMethod: "/protos.Aggregator/ReceiveTaggedTransaction",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AggregatorServer).ReceiveBWTransaction(ctx, req.(*BWTransaction))
+		return srv.(AggregatorServer).ReceiveTaggedTransaction(ctx, req.(*TaggedTransaction))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -92,10 +92,10 @@ var Aggregator_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AggregatorServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ReceiveBWTransaction",
-			Handler:    _Aggregator_ReceiveBWTransaction_Handler,
+			MethodName: "ReceiveTaggedTransaction",
+			Handler:    _Aggregator_ReceiveTaggedTransaction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "protos/bwaggregator.proto",
+	Metadata: "protos/txaggregator.proto",
 }

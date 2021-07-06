@@ -5,7 +5,7 @@
 syntax = "proto3";
 
 
-option go_package = "hyperledger_project/BWAggregator/protos";
+option go_package = "hyperledger_project/TxAggregator/protos";
 
 package protos;
 
@@ -13,10 +13,10 @@ package protos;
 
 
 service Aggregator {
-    rpc ReceiveBWTransaction(BWTransaction) returns (BWTransactionResponse);
+    rpc ReceiveTaggedTransaction(TaggedTransaction) returns (TaggedTransactionResponse);
 }
 
-message BWTransaction {
+message TaggedTransaction {
 
     // chaincode function name
     string functionname = 1;
@@ -36,7 +36,7 @@ message BWTransaction {
     int32 postcondition = 7;        
 }
 
-message BWTransactionResponse {
+message TaggedTransactionResponse {
 
     // A response message indicating whether the
     // endorsement of the action was successful
