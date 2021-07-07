@@ -4,7 +4,7 @@
 
 syntax = "proto3";
 
-option go_package = "hyperledger_project/BWAggregator/protos";
+option go_package = "hyperledger_project/TxAggregator/protos";
 
 
 package protos;
@@ -12,7 +12,7 @@ package protos;
 
 
 
-message BWTransactionResponse {
+message TaggedTransactionResponse {
 
     // A response message indicating whether the
     // endorsement of the action was successful

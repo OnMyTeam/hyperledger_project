@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "hyperledger_project/BWAggregator/protos";
+option go_package = "hyperledger_project/TxAggregator/protos";
 
 
 package protos;
@@ -8,7 +8,7 @@ package protos;
 
 
 
-message BWTransaction {
+message TaggedTransaction {
 
     // chaincode function name
     string functionname = 1;

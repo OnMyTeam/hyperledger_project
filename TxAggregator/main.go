@@ -19,13 +19,14 @@ type TxAggregatorServer struct {
 	aggregator.Aggregator
 }
 
-// ProcessProposal returns BWTransactionResponse
+// ProcessProposal returns TaggedTransactionResponse
 func (aggregator *TxAggregatorServer) ReceiveTaggedTransaction(ctx context.Context, req *protos.TaggedTransaction) (*protos.TaggedTransactionResponse, error) {
-	// BWTxset생성을 위한 메세지 전달
+	// TaggedTxset생성을 위한 메세지 전달
 	aggregator.GetTaggedTxSendChannel() <- req
 
-	BWTxResponse := <-aggregator.GetTaggedTxResponseReceiveChannel()
-	return BWTxResponse, nil
+	TaggedTxResponse := <-aggregator.GetTaggedTxResponseReceiveChannel()
+	log.Println("TaggedTxResponse :", TaggedTxResponse)
+	return TaggedTxResponse, nil
 }
 
 func main() {

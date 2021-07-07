@@ -31,7 +31,7 @@ func Init(contract *gateway.Contract) *Aggregator {
 	aggregator := &Aggregator{
 
 		TaggedTxChan:        make(chan *protos.TaggedTransaction),
-		TaggedTxRsponseChan: make(chan *protos.TaggedTransactionResponse),
+		TaggedTxRsponseChan: make(chan *protos.TaggedTransactionResponse, 3),
 		TaggedTxSetChan:     make(chan []*protos.TaggedTransaction),
 		WriteValueSetChan:   make(chan map[string]*WriteValue),
 		WriteValueSet:       make(map[string]*WriteValue),
@@ -57,8 +57,8 @@ func (aggregator *Aggregator) MakeTaggedTxset() {
 
 		case <-ticker.C:
 			log.Println("=========== MakeTaggedTxset ===========")
-			copyTaggedTxset := make([]*protos.TaggedTransaction, len(aggregator.TaggedTxSet))
 			mutex.Lock()
+			copyTaggedTxset := make([]*protos.TaggedTransaction, len(aggregator.TaggedTxSet))
 			copy(copyTaggedTxset, aggregator.TaggedTxSet)
 			aggregator.TaggedTxSet = nil
 			log.Println("=========== EndMakeTaggedTxset ===========")
@@ -97,6 +97,8 @@ func (aggregator *Aggregator) Aggregate() {
 						WriteValue:   int(TaggedTx.Operand),
 					}
 					aggregator.WriteValueSet[key] = result
+					Response = 2001
+					bytes = []byte(TaggedTx.Key + " SUCCESS")
 					tempWriteValueSet = aggregator.WriteValueSet
 
 				} else {
@@ -104,11 +106,8 @@ func (aggregator *Aggregator) Aggregate() {
 					// 사전 사후 검사
 					if result.WriteValue < int(TaggedTx.Precondition) || result.WriteValue > int(TaggedTx.Postcondition) {
 
-						bytes = []byte(TaggedTx.Key + " REJECT")
-						aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
-							Response: int32(Response),
-							Payload:  bytes,
-						}
+						Response = 500
+						bytes = []byte(TaggedTx.Key + " " + TaggedTx.Fieldname + " REJECT")
 
 					} else { // Operator 별 연산
 						tempWriteValue := result.WriteValue
@@ -117,7 +116,7 @@ func (aggregator *Aggregator) Aggregate() {
 						}
 
 						if tempWriteValue < int(TaggedTx.Precondition) || tempWriteValue > int(TaggedTx.Postcondition) {
-							Response = 500
+							Response = 5001
 							bytes = []byte(TaggedTx.Key + " " + TaggedTx.Fieldname + " REJECT")
 
 						} else {
@@ -125,7 +124,7 @@ func (aggregator *Aggregator) Aggregate() {
 
 							aggregator.WriteValueSet[key] = result
 							tempWriteValueSet = aggregator.WriteValueSet
-							Response = 200
+							Response = 2001
 							bytes = []byte(TaggedTx.Key + " SUCCESS")
 						}
 
@@ -148,29 +147,30 @@ func (aggregator *Aggregator) Aggregate() {
 }
 
 func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
-	var bytes []byte
+	// var bytes []byte
 	for {
 		select {
 		case WriteValueSet := <-aggregator.GetWriteValueSetReceiveChannel():
 			log.Println("=========== SendTxProposals ===========")
 			for _, result := range WriteValueSet {
 
-				err := sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, result.WriteValue)
+				sender.WriteChaincode(contract, result.FunctionName, result.Key, result.Value, result.WriteColumn, result.WriteValue)
 
-				if err != nil {
+				// if err != nil {
 
-					bytes = []byte(" MVCC CONFLICT")
-					aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
-						Response: int32(500),
-						Payload:  bytes,
-					}
-				} else {
-					bytes = []byte(" VALID")
-					aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
-						Response: int32(200),
-						Payload:  bytes,
-					}
-				}
+				// 	bytes = []byte(" MVCC CONFLICT")
+				// 	aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
+				// 		Response: int32(500),
+				// 		Payload:  bytes,
+				// 	}
+
+				// } else {
+				// 	bytes = []byte(" VALID")
+				// 	aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
+				// 		Response: int32(200),
+				// 		Payload:  bytes,
+				// 	}
+				// }
 
 			}
 		}

@@ -1,4 +1,4 @@
-module hyperledger_project/BWAggregator
+module hyperledger_project/TxAggregator
 
 go 1.15
 
