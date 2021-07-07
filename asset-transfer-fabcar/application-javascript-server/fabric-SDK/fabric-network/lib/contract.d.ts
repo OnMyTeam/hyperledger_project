@@ -15,7 +15,7 @@ export interface Contract {
     createTransaction(name: string): Transaction;
     evaluateTransaction(name: string, ...args: string[]): Promise<Buffer>;
     submitTransaction(name: string, ...args: string[]): Promise<Buffer>;
-    submitBWTransaction(name: string, ...args: string[]): Promise<Buffer>;
+    submitTransaction(name: string, ...args: string[], tag: JSON): Promise<Buffer>;
     addContractListener(listener: ContractListener, options?: ListenerOptions): Promise<ContractListener>;
     removeContractListener(listener: ContractListener): void;
     addDiscoveryInterest(interest: DiscoveryInterest): Contract;
@@ -147,8 +147,8 @@ export declare class ContractImpl {
     constructor(network: NetworkImpl, chaincodeId: string, namespace: string);
     createTransaction(name: string): Transaction;
     submitTransaction(name: string, ...args: string[]): Promise<Buffer>;
-    submitBWTransaction(name: string, ...args: string[]): Promise<Buffer>;
-    evaluateTransaction(name: string, ...args: string[]): Promise<Buffer>;
+    submitTransaction(name: string,  ...args: string[], tag: JSON): Promise<Buffer>;
+    evaluateTransaction(name: string): Promise<Buffer>;
     addContractListener(listener: ContractListener, options?: ListenerOptions): Promise<ContractListener>;
     removeContractListener(listener: ContractListener): void;
     /**

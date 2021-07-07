@@ -14,6 +14,8 @@ const logger = Logger.getLogger('Transaction');
 const path = require('path');
 const grpc = require('grpc');
 const protoLoader = require('@grpc/proto-loader');
+const PROTO_PATH = path.resolve(__dirname , '../../../../../TxAggregator/protos/txaggregator.proto');
+        
 function getResponsePayload(proposalResponse) {
     const validEndorsementResponse = getValidEndorsementResponse(proposalResponse.responses);
     if (!validEndorsementResponse) {
@@ -258,39 +260,17 @@ class Transaction {
         }
     }
 
-    async submitAggregator(...args) {
-        // const PROTO_PATH = path.resolve(__dirname , '../../../../../BWAggregator/protos/bwaggregator.proto');
+    async submitAggregator(tag, ...args) {
 
-        // const packageDefinition = protoLoader.loadSync(
-        //     PROTO_PATH,
-        //     {keepCase: true,
-        //     longs: String,
-        //     enums: String,
-        //     defaults: true,
-        //     oneofs: true
-        //     });
-        // const helloProto = grpc.loadPackageDefinition(packageDefinition).user;
-        // var client = new helloProto.User('localhost:9000',
-        //                                     grpc.credentials.createInsecure());
-        // var user;
-        // if (process.argv.length >= 3) {
-        //     user = process.argv[2];
-        // } else {
-        //     user = 'world';
-        // }
-        // client.processProposal({user_id: "1", name: "sanggi", phone_number:"010", age:11}, function(err, response) {
-        //     console.log('Greeting:', response);
-        // });
-        console.log("contract : ",this.name);
+        console.log("tag : ",tag);
         console.log("args : ",args);
         const key = args[0];
-        const fieldname = args[1];
-        const operator = args[2];
-        const operand = args[3];
-        const precondition = args[4];
-        const postcondition = args[5];
-        const PROTO_PATH = path.resolve(__dirname , '../../../../../BWAggregator/protos/bwaggregator.proto');
-        
+        const fieldname = tag.fieldname;
+        const operator = tag.operator;
+        const operand = tag.operand;
+        const precondition = tag.precondition;
+        const postcondition = tag.postcondition;
+
         const packageDefinition = protoLoader.loadSync(
             PROTO_PATH,
             {keepCase: true,
@@ -300,9 +280,8 @@ class Transaction {
             oneofs: true
             });
 
-        const BWAggregatorProto = grpc.loadPackageDefinition(packageDefinition).protos;
-
-        var client = new BWAggregatorProto.Endorser('localhost:9000',
+        const TxAggregatorProto = grpc.loadPackageDefinition(packageDefinition).protos;
+        var client = new TxAggregatorProto.Aggregator('localhost:9000',
                                             grpc.credentials.createInsecure());
 
         var data = {
@@ -314,11 +293,11 @@ class Transaction {
             precondition: precondition,
             postcondition: postcondition
         }
-        client.processProposal(data, function(err, response) {
-            console.log('Greeting:', response.response);
-            
+        
+        logger.debug('Transaction send TxAggregator....');
+        client.ReceiveTaggedTransaction(data, function(err, response) {
+            console.log(response);
         });
-
     }    
     /**
      * Evaluate a transaction function and return its results.

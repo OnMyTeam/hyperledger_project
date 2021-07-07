@@ -85,6 +85,8 @@ export declare class Transaction {
      * timed out before a commit event was received from peers.
      */
     submit(...args: string[]): Promise<Buffer>;
+
+    submitAggregator(tag: JSON, ...args: string[]): Promise<Buffer>;    
     /**
      * Evaluate a transaction function and return its results.
      * The transaction function will be evaluated on the endorsing peers but
