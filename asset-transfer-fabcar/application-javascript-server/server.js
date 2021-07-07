@@ -10,9 +10,10 @@ const HOST = "0.0.0.0";
 
 'use strict';
 
-const { Gateway, Wallets } = require('fabric-network');
+const { Gateway, Wallets } = require('./fabric-SDK/fabric-network');
 const path = require('path');
 const fs = require('fs');
+const { inherits } = require('util');
 
 const channelName = 'mychannel';
 const chaincodeName = 'fabcar';
@@ -422,9 +423,14 @@ app.post('/api/buycar/', async function (req, res) {
 		// This will be sent to both peers and if both peers endorse the transaction, the endorsed proposal will be sent
 		// to the orderer to be committed by each of the peer's to the channel ledger.
 		console.log('=> Submit Transaction: AddCar, adds new car with id, make, model, colour, and owner arguments');
-        for(var i=0; i<=tx_num; i++){
-            contract.submitTransaction('BuyCarBefore',id);
-        }
+        var tag = {
+            fieldname: "Amount",
+            operator: 0,
+            operand: 1,
+            precondition: 0,
+            postcondition: 10000
+        }        
+        await contract.submitTransaction('BuyCarAfter', tag, id);
 		
         console.log('=> Transaction has been submitted');
         await gateway.disconnect();
