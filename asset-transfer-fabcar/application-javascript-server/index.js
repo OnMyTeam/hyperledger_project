@@ -2,7 +2,7 @@ const path = require('path');
 const grpc = require('grpc');
 protoLoader = require('@grpc/proto-loader');
 
-const PROTO_PATH = path.resolve(__dirname , '../../BWAggregator/protos/bwaggregator.proto');
+const PROTO_PATH = path.resolve(__dirname , '../../TxAggregator/protos/txaggregator.proto');
    
 const packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
@@ -13,30 +13,33 @@ const packageDefinition = protoLoader.loadSync(
      oneofs: true
     });
 
-const BWAggregatorProto = grpc.loadPackageDefinition(packageDefinition).protos;
+const TxAggregatorProto = grpc.loadPackageDefinition(packageDefinition).protos;
 
-function main(key, fieldname, amount) {
-  var client = new BWAggregatorProto.Aggregator('localhost:9000',
+function main() {
+  var client = new TxAggregatorProto.Aggregator('localhost:9000',
                                        grpc.credentials.createInsecure());
 
   var data = {
     functionname: "BuyCarAfter",
-    key: key,
-    fieldname: fieldname,
+    key: "CAR0",
+    fieldname: "amount",
     operator: 0,
     operand: 1,
     precondition: 0,
-    postcondition: amount
+    postcondition: 10000
   }
-  client.ReceiveBWTransaction(data, function(err, response) {
-  
-    console.log('return:', response.response, response.payload.toString());
+  var start = Date.now()
+  console.log('/s/', start);
+  client.ReceiveTaggedTransaction(data, function(err, response) {
+    // console.log(num, '/e/', (Date.now() - start)/1000,'/',response.payload.toString());
+    console.log('/e/', Date.now(),'/',response.payload.toString());
+    // console.log('return:', process.argv[2], process.argv[3], response.response, response.payload.toString());
   });
 }
-
-for( var i=0; i <=process.argv[2]; i++){
-  main("CAR0","amount", 1000);
+for(var i=0; i<50; i++){
+  main();
 }
+
 
 
 
