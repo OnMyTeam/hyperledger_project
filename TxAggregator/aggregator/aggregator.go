@@ -43,18 +43,22 @@ func Init(contract *gateway.Contract) *Aggregator {
 	return aggregator
 
 }
+// 특정 시간동안 TaggedTxSet 수집
+// TaggedTxSet 수집 후 키 별 통합을 위해 채널을 통해 Aggregate함수로 전송
 func (aggregator *Aggregator) MakeTaggedTxset() {
 	var mutex = &sync.Mutex{}
-
+	// 임의타임 아웃 시간 설정
 	ticker := time.NewTicker(time.Millisecond * 1500)
 	for {
 		select {
 		case TaggedTx := <-aggregator.GetTaggedTxReceiveChannel():
 			log.Println("=========== ReceiveTaggedTxset ===========")
 			log.Println(TaggedTx)
+			// TaggedTx 수집
 			aggregator.TaggedTxSet = append(aggregator.TaggedTxSet, TaggedTx)
 			log.Println("=========== EndReceiveTaggedTxset ===========")
 
+		// 타임아웃
 		case <-ticker.C:
 			log.Println("=========== MakeTaggedTxset ===========")
 			mutex.Lock()
@@ -103,7 +107,8 @@ func (aggregator *Aggregator) Aggregate() {
 
 				} else {
 
-					// 사전 사후 검사
+					// 각 키 별 통합 후 사전 사후 검사
+					// ex) 0미만 1000초과시 reject 처리
 					if result.WriteValue < int(TaggedTx.Precondition) || result.WriteValue > int(TaggedTx.Postcondition) {
 
 						Response = 500
@@ -130,7 +135,7 @@ func (aggregator *Aggregator) Aggregate() {
 
 					}
 				}
-				aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
+				aggregator.GetTaggedTxReponseSendChannel() <- &protos.TaggedTransactionResponse{
 					Response: int32(Response),
 					Payload:  bytes,
 				}
@@ -145,7 +150,7 @@ func (aggregator *Aggregator) Aggregate() {
 
 	}
 }
-
+// 각 키별 통합 후 패브릭네트워크로 TxProposal 전송
 func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
 	// var bytes []byte
 	for {
@@ -159,14 +164,14 @@ func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
 				// if err != nil {
 
 				// 	bytes = []byte(" MVCC CONFLICT")
-				// 	aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
+				// 	aggregator.GetTaggedTxReponseSendChannel() <- &protos.TaggedTransactionResponse{
 				// 		Response: int32(500),
 				// 		Payload:  bytes,
 				// 	}
 
 				// } else {
 				// 	bytes = []byte(" VALID")
-				// 	aggregator.GetTaggedTxesponseSendChannel() <- &protos.TaggedTransactionResponse{
+				// 	aggregator.GetTaggedTxReponseSendChannel() <- &protos.TaggedTransactionResponse{
 				// 		Response: int32(200),
 				// 		Payload:  bytes,
 				// 	}
@@ -178,28 +183,35 @@ func (aggregator *Aggregator) SendTxProposals(contract *gateway.Contract) {
 	}
 }
 
-// GetTaggedTxReceiveChanneln Receive TaggedTx Chan
+// GetTaggedTxReceiveChannel Receive TaggedTx 
 func (aggregator *Aggregator) GetTaggedTxReceiveChannel() <-chan *protos.TaggedTransaction {
 	return aggregator.TaggedTxChan
 }
+// GetTaggedTxSendChannel Send TaggedTx 
 func (aggregator *Aggregator) GetTaggedTxSendChannel() chan<- *protos.TaggedTransaction {
 	return aggregator.TaggedTxChan
 }
+// GetTaggedTxResponseReceiveChannel Receive TaggedTxResponse 
 func (aggregator *Aggregator) GetTaggedTxResponseReceiveChannel() <-chan *protos.TaggedTransactionResponse {
 	return aggregator.TaggedTxRsponseChan
 }
-func (aggregator *Aggregator) GetTaggedTxesponseSendChannel() chan<- *protos.TaggedTransactionResponse {
+// GetTaggedTxReponseSendChannel Send TaggedTxResponse 
+func (aggregator *Aggregator) GetTaggedTxReponseSendChannel() chan<- *protos.TaggedTransactionResponse {
 	return aggregator.TaggedTxRsponseChan
 }
+// GetTaggedTxSetReceiveChannel Receive TaggedTxSet
 func (aggregator *Aggregator) GetTaggedTxSetReceiveChannel() <-chan []*protos.TaggedTransaction {
 	return aggregator.TaggedTxSetChan
 }
+// GetTaggedTxSetSendChannel Send TaggedTxSet
 func (aggregator *Aggregator) GetTaggedTxSetSendChannel() chan<- []*protos.TaggedTransaction {
 	return aggregator.TaggedTxSetChan
 }
+// GetWriteValueSetReceiveChannel Receive WriteValueSet each for Key
 func (aggregator *Aggregator) GetWriteValueSetReceiveChannel() <-chan map[string]*WriteValue {
 	return aggregator.WriteValueSetChan
 }
+// GetWriteValueSetSendChannel Send WriteValueSet each for Key
 func (aggregator *Aggregator) GetWriteValueSetSendChannel() chan<- map[string]*WriteValue {
 	return aggregator.WriteValueSetChan
 }
