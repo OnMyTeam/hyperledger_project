@@ -101,7 +101,7 @@ func (aggregator *Aggregator) Aggregate() {
 						WriteValue:   int(TaggedTx.Operand),
 					}
 					aggregator.WriteValueSet[key] = result
-					Response = 2001
+					Response = 200
 					bytes = []byte(TaggedTx.Key + " SUCCESS")
 					tempWriteValueSet = aggregator.WriteValueSet
 
@@ -121,7 +121,7 @@ func (aggregator *Aggregator) Aggregate() {
 						}
 
 						if tempWriteValue < int(TaggedTx.Precondition) || tempWriteValue > int(TaggedTx.Postcondition) {
-							Response = 5001
+							Response = 500
 							bytes = []byte(TaggedTx.Key + " " + TaggedTx.Fieldname + " REJECT")
 
 						} else {
@@ -129,7 +129,7 @@ func (aggregator *Aggregator) Aggregate() {
 
 							aggregator.WriteValueSet[key] = result
 							tempWriteValueSet = aggregator.WriteValueSet
-							Response = 2001
+							Response = 200
 							bytes = []byte(TaggedTx.Key + " SUCCESS")
 						}
 
